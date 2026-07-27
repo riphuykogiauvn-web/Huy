@@ -1,0 +1,226 @@
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local MIN_SPEED = 8
+local MAX_SPEED = 250
+local DEFAULT_SPEED = 16
+local STEP_SPEED = 5
+
+local currentSpeed = DEFAULT_SPEED
+local humanoid
+
+local function applySpeed()
+	if humanoid then
+		humanoid.WalkSpeed = currentSpeed
+	end
+end
+
+local function setSpeed(value)
+	currentSpeed = math.clamp(math.floor(value + 0.5), MIN_SPEED, MAX_SPEED)
+	speedText.Text = tostring(currentSpeed)
+
+	local ratio = (currentSpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)
+	TweenService:Create(
+		fill,
+		TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{Size = UDim2.new(ratio, 0, 1, 0)}
+	):Play()
+
+	applySpeed()
+end
+
+local function setupCharacter(char)
+	humanoid = char:WaitForChild("Humanoid")
+	task.wait(0.1)
+	applySpeed()
+end
+
+player.CharacterAdded:Connect(setupCharacter)
+if player.Character then
+	setupCharacter(player.Character)
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "SpeedMenuGui"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = playerGui
+
+local shadow = Instance.new("Frame")
+shadow.Size = UDim2.new(0, 300, 0, 210)
+shadow.Position = UDim2.new(0, 24, 0.5, -105)
+shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+shadow.BackgroundTransparency = 0.35
+shadow.BorderSizePixel = 0
+shadow.Parent = gui
+
+local shadowCorner = Instance.new("UICorner")
+shadowCorner.CornerRadius = UDim.new(0, 18)
+shadowCorner.Parent = shadow
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(1, -6, 1, -6)
+main.Position = UDim2.new(0, 3, 0, 3)
+main.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+main.BorderSizePixel = 0
+main.Parent = shadow
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 18)
+mainCorner.Parent = main
+
+local stroke = Instance.new("UIStroke")
+stroke.Thickness = 1
+stroke.Color = Color3.fromRGB(120, 120, 160)
+stroke.Transparency = 0.5
+stroke.Parent = main
+
+local topBar = Instance.new("Frame")
+topBar.Size = UDim2.new(1, 0, 0, 42)
+topBar.BackgroundTransparency = 1
+topBar.Parent = main
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -60, 1, 0)
+title.Position = UDim2.new(0, 14, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "Speed Control"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = topBar
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 28, 0, 28)
+closeBtn.Position = UDim2.new(1, -36, 0, 7)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+closeBtn.Text = "x"
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 18
+closeBtn.BorderSizePixel = 0
+closeBtn.Parent = topBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 0)
+closeCorner.Parent = closeBtn
+
+local speedText = Instance.new("TextLabel")
+speedText.Size = UDim2.new(1, -28, 0, 42)
+speedText.Position = UDim2.new(0, 14, 0, 46)
+speedText.BackgroundTransparency = 1
+speedText.Text = tostring(currentSpeed)
+speedText.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedText.Font = Enum.Font.GothamBlack
+speedText.TextSize = 34
+speedText.TextXAlignment = Enum.TextXAlignment.Left
+speedText.Parent = main
+
+local hint = Instance.new("TextLabel")
+hint.Size = UDim2.new(1, -28, 0, 18)
+hint.Position = UDim2.new(0, 14, 0, 88)
+hint.BackgroundTransparency = 1
+hint.Text = "WalkSpeed"
+hint.TextColor3 = Color3.fromRGB(170, 170, 180)
+hint.Font = Enum.Font.Gotham
+hint.TextSize = 13
+hint.TextXAlignment = Enum.TextXAlignment.Left
+hint.Parent = main
+
+local barBg = Instance.new("Frame")
+barBg.Size = UDim2.new(1, -28, 0, 10)
+barBg.Position = UDim2.new(0, 14, 0, 118)
+barBg.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+barBg.BorderSizePixel = 0
+barBg.Parent = main
+
+local barCorner = Instance.new("UICorner")
+barCorner.CornerRadius = UDim.new(1, 0)
+barCorner.Parent = barBg
+
+fill = Instance.new("Frame")
+fill.Size = UDim2.new((currentSpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED), 0, 1, 0)
+fill.BackgroundColor3 = Color3.fromRGB(130, 100, 255)
+fill.BorderSizePixel = 0
+fill.Parent = barBg
+
+local fillCorner = Instance.new("UICorner")
+fillCorner.CornerRadius = UDim.new(1, 0)
+fillCorner.Parent = fill
+
+local function makeButton(text, x, y, w, color)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0, w, 0, 40)
+	btn.Position = UDim2.new(0, x, 0, y)
+	btn.BackgroundColor3 = color
+	btn.Text = text
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 16
+	btn.BorderSizePixel = 0
+	btn.Parent = main
+
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, 12)
+	c.Parent = btn
+
+	return btn
+end
+
+local minusBtn = makeButton("-", 14, 145, 60, Color3.fromRGB(45, 45, 60))
+local resetBtn = makeButton("Reset", 82, 145, 90, Color3.fromRGB(75, 75, 95))
+local plusBtn = makeButton("+", 180, 145, 60, Color3.fromRGB(130, 100, 255))
+
+minusBtn.MouseButton1Click:Connect(function()
+	setSpeed(currentSpeed - STEP_SPEED)
+end)
+
+plusBtn.MouseButton1Click:Connect(function()
+	setSpeed(currentSpeed + STEP_SPEED)
+end)
+
+resetBtn.MouseButton1Click:Connect(function()
+	setSpeed(DEFAULT_SPEED)
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+	gui.Enabled = false
+end)
+
+local dragging = false
+local dragStart
+local startPos
+
+topBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = shadow.Position
+	end
+end)
+
+topBar.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if not dragging then return end
+	if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
+
+	local delta = input.Position - dragStart
+	shadow.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end)
+
+setSpeed(DEFAULT_SPEED)
