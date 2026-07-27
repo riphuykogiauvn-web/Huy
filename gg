@@ -1,226 +1,1416 @@
+--[[
+    AMETHYST HUB V3.3 (Fosaken)
+    Dev: DUYBEO
+    UI: WindUI (Official)
+    Update: 
+    - FIXED KILLER AIMBOT BLACK SCREEN (CameraType Check)
+    - Added 1x1x1x1 Minion ESP
+    Status: Stable
+    💥 BẢN ĐỘ GIAO DIỆN HUTAO HUB (CHUẨN DOCS WINDUI): 
+    - Dùng Opened = true để mở full 100% chức năng.
+    - Dùng Box = false để xóa viền và DIỆT TẬN GỐC mũi tên, tạo Tiêu đề trống trải y như Hutao Hub.
+    - Sửa "Name" thành "Title" để xóa chữ Toggle. Không xài Desc (Xóa Bật/Tắt).
+    - GIỮ NGUYÊN 100% LOGIC CODE!
+]]
+
+-- Đợi game load xong để tránh lỗi script
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+-- 🔴 PHẦN 1: TẢI WINDUI (LINK CHÍNH THỨC)
+local Success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+end)
+
+if not Success or not WindUI then
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Lỗi Mạng",
+        Text = "Không tải được WindUI. Vui lòng bật 1.1.1.1!",
+        Duration = 10
+    })
+    return
+end
+
+-- Cấu hình WindUI
+WindUI:SetNotificationLower(true) 
+
+local Window = WindUI:CreateWindow({
+    Title = "AMETHYST HUB V3.3",
+    Icon = "rbxassetid://100817188992562",
+    Author = "DUYBEO",
+    Folder = "AmethystHub",
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 170,
+    HasOutline = true,
+})
+
+-- Tạo các Tab tương ứng
+local Tabs = {
+    Farm = Window:Tab({ Title = "Auto Farm", Icon = "sword" }),
+    Combat = Window:Tab({ Title = "Combat", Icon = "crosshair" }),
+    Player = Window:Tab({ Title = "Visuals", Icon = "eye" }),
+    Settings = Window:Tab({ Title = "Settings", Icon = "settings" })
+}
+
+-- Hàm thông báo
+local function Notify(title, content, duration)
+    WindUI:Notify({
+        Title = title,
+        Content = content,
+        Duration = duration or 3,
+        Icon = "alert-circle"
+    })
+end
+
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+-- =================================================================
+-- 1. KILLER AIMBOT (FIXED: ANTI-BLACK SCREEN CUTSCENE)
+-- =================================================================
+do
+    getgenv().KillerAimbotActive = false
+    -- 💥 CÔNG THỨC CHUẨN WINDUI: Opened = true (luôn mở), Box = false (xóa khung + xóa mũi tên) 💥
+    local AimSection = Tabs.Combat:Section({ Title = "Killer Aimbot", Opened = true, Box = false })
+    
+    local AimConfig = { Range = 80, Smoothness = 0.8 }
+    local FOVRing = nil
+    
+    -- Setup Drawing for FOV
+    local Drawing = Drawing or require(game:GetService("ReplicatedStorage"):WaitForChild("Drawing"))
+    pcall(function()
+        if Drawing then
+            FOVRing = Drawing.new("Circle")
+            FOVRing.Visible = false
+            FOVRing.Thickness = 2
+            FOVRing.Color = Color3.fromRGB(255, 0, 0)
+            FOVRing.Filled = false
+            FOVRing.Transparency = 0.5
+        end
+    end)
 
-local MIN_SPEED = 8
-local MAX_SPEED = 250
-local DEFAULT_SPEED = 16
-local STEP_SPEED = 5
+    local function IsPlayerKiller()
+        if LocalPlayer.Team then
+            local tName = LocalPlayer.Team.Name
+            if tName == "Killers" or tName == "Killer" or tName == "The Stalker" then
+                return true
+            end
+        end
+        if LocalPlayer.Character and LocalPlayer.Character.Parent then
+            if LocalPlayer.Character.Parent.Name == "Killers" then
+                return true
+            end
+        end
+        return false
+    end
 
-local currentSpeed = DEFAULT_SPEED
-local humanoid
+    local function GetClosestTarget()
+        local closestDist = AimConfig.Range
+        local target = nil
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                local isTarget = true
+                if LocalPlayer.Team and plr.Team and LocalPlayer.Team == plr.Team then 
+                    isTarget = false 
+                end
+                
+                local hum = plr.Character:FindFirstChild("Humanoid")
+                -- [FIX] Kiểm tra kỹ các trạng thái "Không thể nhắm"
+                if hum then
+                    if hum.Health <= 0 then isTarget = false end
+                    -- Nếu survivor đang ở trạng thái PlatformStand (thường là bị ngã hoặc đang bị Kill Animation) -> Bỏ qua ngay
+                    if hum.PlatformStand == true then isTarget = false end
+                else
+                    isTarget = false
+                end
 
-local function applySpeed()
-	if humanoid then
-		humanoid.WalkSpeed = currentSpeed
-	end
+                if isTarget then
+                    local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if myRoot then
+                        local dist = (myRoot.Position - plr.Character.HumanoidRootPart.Position).Magnitude
+                        if dist < closestDist then
+                            closestDist = dist
+                            target = plr.Character.HumanoidRootPart
+                        end
+                    end
+                end
+            end
+        end
+        return target
+    end
+
+    local function StartAimbotLoop()
+        RunService:BindToRenderStep("KillerAimbotLoop", Enum.RenderPriority.Camera.Value + 1, function()
+            if not getgenv().KillerAimbotActive then 
+                if FOVRing then FOVRing.Visible = false end
+                return 
+            end
+
+            -- [FIX QUAN TRỌNG NHẤT - CHỐNG ĐEN MÀN HÌNH]
+            -- Nếu Camera đang bị game chiếm quyền (Cutscene/Kill Anim) -> DỪNG AIMBOT NGAY
+            if workspace.CurrentCamera.CameraType == Enum.CameraType.Scriptable then
+                if FOVRing then FOVRing.Visible = false end
+                return
+            end
+
+            if not IsPlayerKiller() then
+                if FOVRing then FOVRing.Visible = false end
+                return
+            end
+
+            if FOVRing and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local cam = workspace.CurrentCamera
+                local rootPos = LocalPlayer.Character.HumanoidRootPart.Position
+                local vector, onScreen = cam:WorldToViewportPoint(rootPos)
+                if onScreen then
+                    FOVRing.Position = Vector2.new(vector.X, vector.Y)
+                    FOVRing.Radius = (AimConfig.Range * 500) / (vector.Z + 1)
+                    FOVRing.Visible = true
+                else
+                    FOVRing.Visible = false
+                end
+            end
+
+            local target = GetClosestTarget()
+            
+            -- Kiểm tra lại lần cuối
+            if target and target.Parent then
+                local tHum = target.Parent:FindFirstChild("Humanoid")
+                if tHum and (tHum.Health <= 0 or tHum.PlatformStand) then
+                    target = nil 
+                end
+            end
+
+            if target and LocalPlayer.Character then
+                local myRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if myRoot then
+                    -- Sử dụng pcall để tránh lỗi CFrame gây đen màn hình
+                    pcall(function()
+                        local lookPos = Vector3.new(target.Position.X, myRoot.Position.Y, target.Position.Z)
+                        myRoot.CFrame = myRoot.CFrame:Lerp(CFrame.lookAt(myRoot.Position, lookPos), AimConfig.Smoothness)
+                    end)
+                end
+            end
+        end)
+    end
+
+    local function StopAimbotLoop()
+        RunService:UnbindFromRenderStep("KillerAimbotLoop")
+        if FOVRing then FOVRing.Visible = false end
+    end
+
+    AimSection:Toggle({
+        Title = "Bật Aimbot (Killer)",
+        Default = false,
+        Callback = function(state)
+            getgenv().KillerAimbotActive = state
+            if state then StartAimbotLoop() else StopAimbotLoop() end
+        end
+    })
+
+    -- [UPDATE] THAY SLIDER BẰNG INPUT
+    AimSection:Input({
+        Title = "Aimbot Range (Nhập số)",
+        Default = "80",
+        Placeholder = "Ví dụ: 100",
+        Numeric = true,
+        Finished = true, -- Chỉ cập nhật khi nhấn Enter hoặc bỏ chọn
+        Callback = function(Text)
+            local num = tonumber(Text)
+            if num then
+                AimConfig.Range = num
+                Notify("Cài đặt", "Khoảng cách Aimbot: " .. num)
+            end
+        end
+    })
 end
 
-local function setSpeed(value)
-	currentSpeed = math.clamp(math.floor(value + 0.5), MIN_SPEED, MAX_SPEED)
-	speedText.Text = tostring(currentSpeed)
+-- =================================================================
+-- [MỚI] 1x1x1x1 MINIONS ESP (EVENT BASED - NO LAG)
+-- =================================================================
+do
+    local MinionSection = Tabs.Combat:Section({ Title = "1x1x1x1 Minions", Opened = true, Box = false })
+    getgenv().ESPMinionActive = false
+    
+    local ESPManager = {
+        Enabled = false,
+        Connections = {},
+        Objects = {},
+        UpdateLoop = nil
+    }
 
-	local ratio = (currentSpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)
-	TweenService:Create(
-		fill,
-		TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-		{Size = UDim2.new(ratio, 0, 1, 0)}
-	):Play()
+    function ESPManager:AddObject(model)
+        if self.Objects[model] then return end 
+        
+        -- Kiểm tra kỹ part gốc
+        local part = model:FindFirstChild("HumanoidRootPart") or model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+        if not part then return end
 
-	applySpeed()
+        -- Tạo Highlight (Xanh Ngọc)
+        local hl = Instance.new("Highlight")
+        hl.Adornee = model
+        hl.FillColor = Color3.fromRGB(0, 255, 127) -- Spring Green
+        hl.OutlineColor = Color3.new(1, 1, 1)
+        hl.FillTransparency = 0.5
+        hl.OutlineTransparency = 0
+        hl.Parent = game.CoreGui -- Bắt buộc để hiện xuyên tường
+        
+        -- Tạo Chữ (Tên + Mét)
+        local bb = Instance.new("BillboardGui")
+        bb.Size = UDim2.new(0, 200, 0, 50)
+        bb.AlwaysOnTop = true
+        bb.StudsOffset = Vector3.new(0, 3, 0)
+        bb.Adornee = part
+        bb.Parent = hl
+
+        local txt = Instance.new("TextLabel")
+        txt.Size = UDim2.new(1, 0, 1, 0)
+        txt.BackgroundTransparency = 1
+        txt.TextColor3 = Color3.fromRGB(0, 255, 127)
+        txt.TextStrokeTransparency = 0
+        txt.Font = Enum.Font.GothamBold
+        txt.TextSize = 14
+        txt.Text = "Zombie Minion"
+        txt.Parent = bb
+
+        self.Objects[model] = { hl = hl, gui = txt, part = part }
+
+        -- SỰ KIỆN 1: TỰ HỦY KHI ZOMBIE CHẾT/BIẾN MẤT (Quan trọng để giảm lag)
+        local conn = model.AncestryChanged:Connect(function(_, parent)
+            if not parent then self:RemoveObject(model) end
+        end)
+        self.Objects[model].Conn = conn
+    end
+
+    function ESPManager:RemoveObject(model)
+        local data = self.Objects[model]
+        if data then
+            if data.Conn then data.Conn:Disconnect() end
+            if data.hl then data.hl:Destroy() end
+            self.Objects[model] = nil
+        end
+    end
+
+    function ESPManager:Toggle(state)
+        self.Enabled = state
+        if state then
+            -- Quét lần đầu
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj.Name == "1x1x1x1Zombie" and obj:IsA("Model") then
+                    self:AddObject(obj)
+                end
+            end
+
+            -- SỰ KIỆN 2: LẮNG NGHE KHI CÓ ZOMBIE MỚI SPAWN
+            local addedConn = workspace.DescendantAdded:Connect(function(obj)
+                if obj.Name == "1x1x1x1Zombie" and obj:IsA("Model") then
+                    task.delay(0.5, function() -- Đợi load model
+                        if self.Enabled and obj.Parent then self:AddObject(obj) end
+                    end)
+                end
+            end)
+            table.insert(self.Connections, addedConn)
+
+            -- Vòng lặp cập nhật khoảng cách (Nhẹ nhàng 0.1s/lần)
+            self.UpdateLoop = task.spawn(function()
+                local Camera = workspace.CurrentCamera
+                while self.Enabled do
+                    for model, data in pairs(self.Objects) do
+                        if model.Parent and data.part then
+                            local dist = math.floor((Camera.CFrame.Position - data.part.Position).Magnitude)
+                            data.gui.Text = string.format("Zombie Minion [%dm]", dist)
+                        else
+                            self:RemoveObject(model)
+                        end
+                    end
+                    task.wait(0.1)
+                end
+            end)
+        else
+            -- Tắt sạch sẽ
+            for _, conn in pairs(self.Connections) do conn:Disconnect() end
+            self.Connections = {}
+            if self.UpdateLoop then task.cancel(self.UpdateLoop) self.UpdateLoop = nil end
+            for model, _ in pairs(self.Objects) do self:RemoveObject(model) end
+        end
+    end
+
+    MinionSection:Toggle({
+        Title = "Hiện Zombie Minion (1x1x1x1)",
+        Default = false,
+        Callback = function(state)
+            getgenv().ESPMinionActive = state
+            ESPManager:Toggle(state)
+        end
+    })
 end
 
-local function setupCharacter(char)
-	humanoid = char:WaitForChild("Humanoid")
-	task.wait(0.1)
-	applySpeed()
+-- =================================================================
+-- [VEERONICA] AUTO TRICK (LOGIC GỐC 100%)
+-- =================================================================
+do
+    getgenv().VeeronicaTrickActive = false
+    local VerSection = Tabs.Combat:Section({ Title = "Veeronica", Opened = true, Box = false })
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+    local function getBehaviorFolder()
+        local ok, folder = pcall(function()
+            return ReplicatedStorage.Assets.Survivors.Veeronica.Behavior
+        end)
+        return ok and folder
+    end
+
+    local function getSprintingButton()
+        local gui = LocalPlayer:FindFirstChild("PlayerGui")
+        if not gui then return end
+        local main = gui:FindFirstChild("MainUI")
+        if not main then return end
+        return main:FindFirstChild("SprintingButton")
+    end
+
+    local function adorneeIsPlayerCharacter(h)
+        if not h then return false end
+        local adornee = h.Adornee
+        local char = LocalPlayer.Character
+        if not adornee or not char then return false end
+        return adornee == char or adornee:IsDescendantOf(char)
+    end
+
+    local function triggerSprint()
+        local btn = getSprintingButton()
+        if not btn then return end
+        for _, v in pairs(getconnections(btn.MouseButton1Down)) do
+            pcall(function() v:Fire(); if v.Function then v:Function() end end)
+        end
+        for _, v in pairs(getconnections(btn.Activated)) do pcall(function() v:Fire() end) end
+    end
+
+    local function StartAutoTrick()
+        local TrickLoop
+        TrickLoop = task.spawn(function()
+            while task.wait(0.1) do
+                if not getgenv().VeeronicaTrickActive then break end
+                local folder = getBehaviorFolder()
+                if folder then
+                    for _, child in ipairs(folder:GetDescendants()) do
+                        if child:IsA("Highlight") and adorneeIsPlayerCharacter(child) then
+                            triggerSprint()
+                            Notify("Veeronica", "Auto Trick Executed!", 1)
+                            task.wait(0.5)
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+    end
+
+    VerSection:Toggle({ 
+        Title = "Bật Auto Sprint (Veeronica)", 
+        Default = false, 
+        Callback = function(state) 
+            getgenv().VeeronicaTrickActive = state 
+            if state then StartAutoTrick() end
+        end 
+    })
 end
 
-player.CharacterAdded:Connect(setupCharacter)
-if player.Character then
-	setupCharacter(player.Character)
+-- =================================================================
+-- 1. GUEST 1337 (LOGIC GỐC 100%)
+-- =================================================================
+do
+    getgenv().GuestActive = false
+    local GuestSection = Tabs.Combat:Section({ Title = "Guest 1337", Opened = true, Box = false })
+    
+    local GuestRange = 7
+    local IsAiming = false
+    local AimEndTime = 0
+    local AimTarget = nil
+    local ComboCooldown = false 
+    local BlockBtn, PunchBtn = nil, nil
+
+    local function FireButton(button)
+        if not button then return end
+        for _, conn in ipairs(getconnections(button.MouseButton1Click)) do conn:Fire() end
+        for _, conn in ipairs(getconnections(button.Activated)) do conn:Fire() end
+        pcall(function() button:Activate() end)
+    end
+
+    local function FindGuestButtons()
+        local gui = LocalPlayer:FindFirstChild("PlayerGui")
+        if not gui then return end
+        local main = gui:FindFirstChild("MainUI")
+        local container = main and main:FindFirstChild("AbilityContainer")
+        if container then
+            BlockBtn = container:FindFirstChild("Block") or container:FindFirstChild("Shield")
+            PunchBtn = container:FindFirstChild("Punch") or container:FindFirstChild("Counter")
+        end
+    end
+
+    local function TriggerRapidCombo(target)
+        ComboCooldown = true
+        FireButton(BlockBtn)
+        Notify("Guest 1337", "BLOCK & SPAM PUNCH!", 1)
+        IsAiming = true; AimTarget = target; AimEndTime = tick() + 1.0
+        task.spawn(function()
+            for i = 1, 20 do if PunchBtn then FireButton(PunchBtn) end task.wait(0.02) end
+        end)
+        task.delay(1.5, function() ComboCooldown = false end)
+    end
+
+    RunService.RenderStepped:Connect(function()
+        if not getgenv().GuestActive then return end
+        if IsAiming then
+            if tick() < AimEndTime and AimTarget and AimTarget.Parent then
+                local myChar = LocalPlayer.Character
+                if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+                    local myRoot = myChar.HumanoidRootPart
+                    local human = myChar:FindFirstChild("Humanoid")
+                    if human then human.AutoRotate = false end
+                    local targetPos = AimTarget.Position
+                    myRoot.CFrame = CFrame.lookAt(myRoot.Position, Vector3.new(targetPos.X, myRoot.Position.Y, targetPos.Z))
+                end
+            else
+                IsAiming = false; AimTarget = nil
+                local myChar = LocalPlayer.Character
+                if myChar and myChar:FindFirstChild("Humanoid") then myChar.Humanoid.AutoRotate = true end
+            end
+        end
+        if not ComboCooldown then
+            local killers = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+            local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if killers and myRoot then
+                for _, k in ipairs(killers:GetChildren()) do
+                    local kRoot = k:FindFirstChild("HumanoidRootPart")
+                    local kHum = k:FindFirstChild("Humanoid")
+                    if kRoot and kHum and kHum.Health > 0 then
+                        if (kRoot.Position - myRoot.Position).Magnitude <= GuestRange then
+                            local animator = kHum:FindFirstChild("Animator")
+                            if animator then
+                                for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                                    if (track.Priority == Enum.AnimationPriority.Action or track.Priority == Enum.AnimationPriority.Action2 or track.Priority == Enum.AnimationPriority.Action3) and track.Speed > 0 and track.TimePosition < 0.4 then
+                                        TriggerRapidCombo(kRoot); return
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
+    task.spawn(function() while true do if getgenv().GuestActive then FindGuestButtons() end task.wait(1) end end)
+    
+    GuestSection:Toggle({ 
+        Title = "Tự động phản đòn (Auto Counter)", 
+        Default = false, 
+        Callback = function(state) getgenv().GuestActive = state end 
+    })
 end
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "SpeedMenuGui"
-gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
-gui.Parent = playerGui
+-- =================================================================
+-- 2. SHEDLETSKY AIMBOT (LOGIC GỐC 100% - INPUT RANGE)
+-- =================================================================
+do
+    getgenv().ShedletskyActive = false
+    local ShedSection = Tabs.Combat:Section({ Title = "Shedletsky", Opened = true, Box = false })
+    local shedletskyRange = 80
+    
+    local SlashCooldown, AimDuration, LastSlashTime = 40.0, 1.0, 0
+    local IsAiming, AimEndTime, AimTarget, SlashButton, Connection = false, 0, nil, nil, nil
 
-local shadow = Instance.new("Frame")
-shadow.Size = UDim2.new(0, 300, 0, 210)
-shadow.Position = UDim2.new(0, 24, 0.5, -105)
-shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-shadow.BackgroundTransparency = 0.35
-shadow.BorderSizePixel = 0
-shadow.Parent = gui
+    local function FindSlashButton()
+        local gui = LocalPlayer:FindFirstChild("PlayerGui")
+        if not gui then return nil end
+        local main = gui:FindFirstChild("MainUI")
+        local container = main and main:FindFirstChild("AbilityContainer")
+        return container and (container:FindFirstChild("Slash") or container:FindFirstChild("Katana"))
+    end
 
-local shadowCorner = Instance.new("UICorner")
-shadowCorner.CornerRadius = UDim.new(0, 18)
-shadowCorner.Parent = shadow
+    local function GetClosestKiller()
+        local closest, minDist = nil, shedletskyRange
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character then
+                local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+                if hrp and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local isKiller = (plr.Team and (plr.Team.Name == "Killers" or plr.Team.Name == "Killer")) or (plr.Character.Parent and plr.Character.Parent.Name == "Killers")
+                    if isKiller then
+                        local dist = (hrp.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                        if dist < minDist then minDist = dist; closest = hrp end
+                    end
+                end
+            end
+        end
+        return closest
+    end
 
-local main = Instance.new("Frame")
-main.Size = UDim2.new(1, -6, 1, -6)
-main.Position = UDim2.new(0, 3, 0, 3)
-main.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
-main.BorderSizePixel = 0
-main.Parent = shadow
-
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 18)
-mainCorner.Parent = main
-
-local stroke = Instance.new("UIStroke")
-stroke.Thickness = 1
-stroke.Color = Color3.fromRGB(120, 120, 160)
-stroke.Transparency = 0.5
-stroke.Parent = main
-
-local topBar = Instance.new("Frame")
-topBar.Size = UDim2.new(1, 0, 0, 42)
-topBar.BackgroundTransparency = 1
-topBar.Parent = main
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -60, 1, 0)
-title.Position = UDim2.new(0, 14, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "Speed Control"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 18
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = topBar
-
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 28, 0, 28)
-closeBtn.Position = UDim2.new(1, -36, 0, 7)
-closeBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
-closeBtn.Text = "x"
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 18
-closeBtn.BorderSizePixel = 0
-closeBtn.Parent = topBar
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(1, 0)
-closeCorner.Parent = closeBtn
-
-local speedText = Instance.new("TextLabel")
-speedText.Size = UDim2.new(1, -28, 0, 42)
-speedText.Position = UDim2.new(0, 14, 0, 46)
-speedText.BackgroundTransparency = 1
-speedText.Text = tostring(currentSpeed)
-speedText.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedText.Font = Enum.Font.GothamBlack
-speedText.TextSize = 34
-speedText.TextXAlignment = Enum.TextXAlignment.Left
-speedText.Parent = main
-
-local hint = Instance.new("TextLabel")
-hint.Size = UDim2.new(1, -28, 0, 18)
-hint.Position = UDim2.new(0, 14, 0, 88)
-hint.BackgroundTransparency = 1
-hint.Text = "WalkSpeed"
-hint.TextColor3 = Color3.fromRGB(170, 170, 180)
-hint.Font = Enum.Font.Gotham
-hint.TextSize = 13
-hint.TextXAlignment = Enum.TextXAlignment.Left
-hint.Parent = main
-
-local barBg = Instance.new("Frame")
-barBg.Size = UDim2.new(1, -28, 0, 10)
-barBg.Position = UDim2.new(0, 14, 0, 118)
-barBg.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
-barBg.BorderSizePixel = 0
-barBg.Parent = main
-
-local barCorner = Instance.new("UICorner")
-barCorner.CornerRadius = UDim.new(1, 0)
-barCorner.Parent = barBg
-
-fill = Instance.new("Frame")
-fill.Size = UDim2.new((currentSpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED), 0, 1, 0)
-fill.BackgroundColor3 = Color3.fromRGB(130, 100, 255)
-fill.BorderSizePixel = 0
-fill.Parent = barBg
-
-local fillCorner = Instance.new("UICorner")
-fillCorner.CornerRadius = UDim.new(1, 0)
-fillCorner.Parent = fill
-
-local function makeButton(text, x, y, w, color)
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(0, w, 0, 40)
-	btn.Position = UDim2.new(0, x, 0, y)
-	btn.BackgroundColor3 = color
-	btn.Text = text
-	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 16
-	btn.BorderSizePixel = 0
-	btn.Parent = main
-
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, 12)
-	c.Parent = btn
-
-	return btn
+    local function HookSlashButton()
+        if not getgenv().ShedletskyActive then return end
+        local btn = FindSlashButton()
+        if btn and btn ~= SlashButton then
+            SlashButton = btn
+            if Connection then Connection:Disconnect() end
+            Connection = SlashButton.MouseButton1Click:Connect(function()
+                if not getgenv().ShedletskyActive then return end
+                if tick() - LastSlashTime < SlashCooldown then return end
+                local target = GetClosestKiller()
+                if target then
+                    AimTarget = target; IsAiming = true; AimEndTime = tick() + AimDuration; LastSlashTime = tick()
+                    Notify("Shedletsky", "Slashing!", 1)
+                end
+            end)
+        end
+    end
+    
+    task.spawn(function() while true do if getgenv().ShedletskyActive then HookSlashButton() end task.wait(1) end end)
+    RunService.RenderStepped:Connect(function()
+        if getgenv().ShedletskyActive and IsAiming and AimTarget and AimTarget.Parent then
+            if tick() < AimEndTime then
+                local myChar = LocalPlayer.Character
+                if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+                    local myRoot = myChar.HumanoidRootPart
+                    local human = myChar:FindFirstChild("Humanoid")
+                    if human then human.AutoRotate = false end
+                    local targetPos = AimTarget.Position
+                    myRoot.CFrame = CFrame.lookAt(myRoot.Position, Vector3.new(targetPos.X, myRoot.Position.Y, targetPos.Z))
+                end
+            else
+                IsAiming = false; AimTarget = nil
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then LocalPlayer.Character.Humanoid.AutoRotate = true end
+            end
+        end
+    end)
+    
+    ShedSection:Toggle({ Title = "Tự động chém (Shedletsky)", Default = false, Callback = function(state) getgenv().ShedletskyActive = state end })
+    
+    ShedSection:Input({
+        Title = "Skill Range (Nhập số)",
+        Default = "80",
+        Placeholder = "Ví dụ: 80",
+        Numeric = true,
+        Finished = true,
+        Callback = function(Text)
+            local num = tonumber(Text)
+            if num then
+                shedletskyRange = num
+                Notify("Cài đặt", "Shedletsky Range: " .. num)
+            end
+        end
+    })
 end
 
-local minusBtn = makeButton("-", 14, 145, 60, Color3.fromRGB(45, 45, 60))
-local resetBtn = makeButton("Reset", 82, 145, 90, Color3.fromRGB(75, 75, 95))
-local plusBtn = makeButton("+", 180, 145, 60, Color3.fromRGB(130, 100, 255))
+-- =================================================================
+-- 3. CHANCE AIMBOT (LOGIC GỐC 100%)
+-- =================================================================
+do
+    local ChanceSection = Tabs.Combat:Section({ Title = "Chance", Opened = true, Box = false })
+    getgenv().ChanceActive = false
+    local aimTargets = {"Slasher", "c00lkidd", "JohnDoe", "1x1x1x1", "Noli", "Guest 666", "Sixer"}
+    local Humanoid, HRP, aiming, prevFlintVisibleAim, lastTriggerTime = nil, nil, false, false, 0
 
-minusBtn.MouseButton1Click:Connect(function()
-	setSpeed(currentSpeed - STEP_SPEED)
-end)
+    local function IsChanceCharacter()
+        local char = LocalPlayer.Character
+        if not char then return false end
+        return char:FindFirstChild("Flintlock", true) or char:FindFirstChild("Chance", true)
+    end
 
-plusBtn.MouseButton1Click:Connect(function()
-	setSpeed(currentSpeed + STEP_SPEED)
-end)
+    local function setupCharacter(char) Humanoid = char:WaitForChild("Humanoid", 5); HRP = char:WaitForChild("HumanoidRootPart", 5) end
+    if LocalPlayer.Character then setupCharacter(LocalPlayer.Character) end
+    LocalPlayer.CharacterAdded:Connect(setupCharacter)
 
-resetBtn.MouseButton1Click:Connect(function()
-	setSpeed(DEFAULT_SPEED)
-end)
+    local function isFlintlockVisible()
+        if not LocalPlayer.Character then return false end
+        local flint = LocalPlayer.Character:FindFirstChild("Flintlock", true) or LocalPlayer.Character:FindFirstChild("Chance", true)
+        if not flint then return false end
+        if not (flint:IsA("BasePart") or flint:IsA("MeshPart") or flint:IsA("UnionOperation")) then
+            flint = flint:FindFirstChildWhichIsA("BasePart", true)
+            if not flint then return false end
+        end
+        return flint.Transparency < 1
+    end
 
-closeBtn.MouseButton1Click:Connect(function()
-	gui.Enabled = false
-end)
+    local function getValidTarget()
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character then
+                local char = plr.Character
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    for _, targetName in ipairs(aimTargets) do if char.Name:lower():find(targetName:lower()) then return hrp end end
+                    if plr.Team and plr.Team.Name == "Killers" then return hrp end
+                end
+            end
+        end
+        return nil
+    end
 
-local dragging = false
-local dragStart
-local startPos
+    local function computeAimPos(targetHRP) return targetHRP.Position + (targetHRP.Velocity * (4 / 60)) end
+    local function faceInstant(toPos)
+        if not HRP or not toPos then return end
+        local fromPos = HRP.Position
+        local lookAt = Vector3.new(toPos.X, fromPos.Y, toPos.Z)
+        HRP.CFrame = HRP.CFrame:Lerp(CFrame.new(fromPos, lookAt), 0.99)
+    end
 
-topBar.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = input.Position
-		startPos = shadow.Position
-	end
-end)
+    RunService.RenderStepped:Connect(function()
+        if getgenv().ChanceActive and IsChanceCharacter() and Humanoid and HRP then
+            local isVisible = isFlintlockVisible()
+            if isVisible and not prevFlintVisibleAim and not aiming then lastTriggerTime = tick(); aiming = true end
+            prevFlintVisibleAim = isVisible
+            if aiming then
+                if tick() - lastTriggerTime <= 1.7 then
+                    Humanoid.AutoRotate = false
+                    local targetHRP = getValidTarget()
+                    if targetHRP then faceInstant(computeAimPos(targetHRP)) end
+                else
+                    aiming = false; Humanoid.AutoRotate = true
+                end
+            end
+        end
+    end)
+    
+    ChanceSection:Toggle({ Title = "Tự động nhắm (Chance)", Default = false, Callback = function(state) getgenv().ChanceActive = state end })
+end
 
-topBar.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = false
-	end
-end)
+-- =================================================================
+-- 4. TWO TIME AIMBOT (LOGIC GỐC 100%)
+-- =================================================================
+do
+    local TwoTimeSection = Tabs.Combat:Section({ Title = "Two Time", Opened = true, Box = false })
+    getgenv().TwoTimeActive = false
+    local AttackDuration, CooldownTime, FrontRadius, BackRadius = 1.0, 15.0, 5, 12
+    local LastAttackFinished, DaggerButton, isBusy = 0, nil, false
 
-UIS.InputChanged:Connect(function(input)
-	if not dragging then return end
-	if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
+    local function FindDaggerButton()
+        local gui = LocalPlayer:FindFirstChild("PlayerGui")
+        if not gui then return nil end
+        local main = gui:FindFirstChild("MainUI")
+        local container = main and main:FindFirstChild("AbilityContainer")
+        if container then DaggerButton = container:FindFirstChild("Dagger"); return DaggerButton end
+        return nil
+    end
+    LocalPlayer.CharacterAdded:Connect(function() task.wait(1) FindDaggerButton() end)
+    task.delay(1, FindDaggerButton) 
 
-	local delta = input.Position - dragStart
-	shadow.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y
-	)
-end)
+    local function ForceSkill()
+        if not DaggerButton then FindDaggerButton() return end
+        for _, conn in ipairs(getconnections(DaggerButton.MouseButton1Click)) do conn:Fire() end
+        for _, conn in ipairs(getconnections(DaggerButton.Activated)) do conn:Fire() end
+        pcall(function() DaggerButton:Activate() end)
+    end
 
-setSpeed(DEFAULT_SPEED)
+    local function TeleportAndLock(target)
+        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if myRoot and target then
+            local behindPos = target.Position - (target.CFrame.LookVector * 2.5)
+            local lookPos = target.Position
+            myRoot.CFrame = CFrame.lookAt(behindPos, Vector3.new(lookPos.X, myRoot.Position.Y, lookPos.Z))
+            myRoot.Velocity = Vector3.zero 
+            myRoot.AssemblyLinearVelocity = Vector3.zero
+        end
+    end
+
+    local function GetTriggerDistance(killerRoot, myRoot)
+        local killerLook = killerRoot.CFrame.LookVector
+        local dirToMe = (myRoot.Position - killerRoot.Position).Unit
+        local dot = killerLook:Dot(dirToMe)
+        if dot > 0.2 then return FrontRadius else return BackRadius end
+    end
+
+    RunService.RenderStepped:Connect(function()
+        if not getgenv().TwoTimeActive or isBusy then return end
+        if not FindDaggerButton() then return end 
+        if tick() - LastAttackFinished < CooldownTime then return end
+        
+        local killers = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+        if not killers then return end
+        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not myRoot then return end
+
+        for _, k in ipairs(killers:GetChildren()) do
+            local kRoot = k:FindFirstChild("HumanoidRootPart")
+            local kHum = k:FindFirstChild("Humanoid")
+            if kRoot and kHum and kHum.Health > 0 then
+                local dist = (kRoot.Position - myRoot.Position).Magnitude
+                local triggerDist = GetTriggerDistance(kRoot, myRoot)
+                if dist <= triggerDist then
+                    isBusy = true
+                    local start = tick()
+                    while tick() - start < AttackDuration and getgenv().TwoTimeActive do
+                        if not kRoot.Parent then break end
+                        TeleportAndLock(kRoot); ForceSkill(); RunService.RenderStepped:Wait()
+                    end
+                    LastAttackFinished = tick(); isBusy = false
+                    return
+                end
+            end
+        end
+    end)
+    
+    TwoTimeSection:Toggle({ Title = "Tự động móc lốp (Backstab)", Default = false, Callback = function(state) getgenv().TwoTimeActive = state end })
+end
+
+-- =================================================================
+-- 5. AUTO FARM & ESP (LOGIC GỐC 100%)
+-- =================================================================
+do
+    local FarmSec = Tabs.Farm:Section({ Title = "Generator Farm", Opened = true, Box = false })
+    getgenv().AutoFarm = false; getgenv().ManualFix = false; local IgnoreList = {} 
+    
+    local function GetProgress(gen)
+        if not gen then return 100 end
+        local p = gen:FindFirstChild("Progress")
+        return (p and p:IsA("NumberValue")) and p.Value or 0
+    end
+
+    local function GetNextGenerator()
+        local closest, target, root = 99999, nil, LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not root then return nil end
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj.Name == "Generator" and obj:IsA("Model") then
+                if not IgnoreList[obj] and GetProgress(obj) < 100 then
+                    local main = obj.PrimaryPart or obj:FindFirstChild("Main")
+                    if main then
+                        local dist = (root.Position - main.Position).Magnitude
+                        if dist < closest then closest = dist; target = obj end
+                    end
+                end
+            end
+        end
+        return target
+    end
+
+    local function StartAutoFarm()
+        spawn(function()
+            while true do
+                task.wait()
+                if not getgenv().AutoFarm then break end
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    if not root then return end
+                    local gen = GetNextGenerator()
+                    if gen then
+                        local pivot = gen:GetPivot()
+                        if pivot then
+                            local dropPos = (pivot * CFrame.new(0, 5, -6)).Position
+                            while getgenv().AutoFarm and (root.Position - dropPos).Magnitude > 3 do
+                                root.CFrame = CFrame.lookAt(dropPos, Vector3.new(pivot.Position.X, dropPos.Y, pivot.Position.Z))
+                                root.Velocity = Vector3.zero
+                                task.wait()
+                            end
+                            if not getgenv().AutoFarm then return end
+                            root.Velocity = Vector3.new(0, -80, 0); task.wait(0.5)
+                            local prompt = gen:FindFirstChild("Main") and gen.Main:FindFirstChild("Prompt")
+                            if prompt then fireproximityprompt(prompt) end
+                            while getgenv().AutoFarm and GetProgress(gen) < 100 do
+                                if prompt then pcall(function() prompt:InputHoldBegin() task.wait() prompt:InputHoldEnd() end) end
+                                if gen:FindFirstChild("Remotes") and gen.Remotes:FindFirstChild("RE") then gen.Remotes.RE:FireServer() end
+                                Notify("Fixing", math.floor(GetProgress(gen)) .. "%", 1)
+                                task.wait(1.5)
+                                if (root.Position - pivot.Position).Magnitude > 15 then break end
+                            end
+                            if GetProgress(gen) >= 100 then IgnoreList[gen] = true; Notify("Done", "Next Generator", 2); task.wait(0.5) end
+                        end
+                    else
+                        getgenv().AutoFarm = false; Notify("Info", "All Fixed!", 5)
+                    end
+                end)
+            end
+        end)
+    end
+
+    local function StartManualFix()
+        spawn(function()
+            while getgenv().ManualFix do
+                task.wait(1.5) 
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    if not root then return end
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if obj.Name == "Generator" and obj:IsA("Model") then
+                            local main = obj.PrimaryPart or obj:FindFirstChild("Main")
+                            if main then
+                                local dist = (root.Position - main.Position).Magnitude
+                                if dist < 15 and GetProgress(obj) < 100 then
+                                    if obj:FindFirstChild("Remotes") and obj.Remotes:FindFirstChild("RE") then obj.Remotes.RE:FireServer() end
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+        end)
+    end
+
+    FarmSec:Toggle({ Title = "Bật Auto Farm (Teleport)", Default = false, Callback = function(V) getgenv().AutoFarm = V if V then StartAutoFarm() end end })
+    FarmSec:Toggle({ Title = "Hỗ trợ sửa máy thủ công", Default = false, Callback = function(V) getgenv().ManualFix = V if V then StartManualFix() end end })
+    FarmSec:Button({ Title = "Reset List", Callback = function() IgnoreList = {} Notify("Reset", "List Cleared", 2) end})
+
+    -- ESP & Stamina
+    getgenv().ESPGen = false
+    getgenv().ESPPlayer = false
+    local VisualSec = Tabs.Player:Section({ Title = "ESP & Visuals", Opened = true, Box = false })
+    local ESPFolder = Instance.new("Folder", game.CoreGui); ESPFolder.Name = "AmethystESP_V1.9"
+    local GenConnections = {}
+    local PlayerConnections = {}
+
+    local function GetDist(model)
+        local lp = game.Players.LocalPlayer.Character
+        if lp and lp:FindFirstChild("HumanoidRootPart") and model and model:FindFirstChild("PrimaryPart") then
+            return math.floor((lp.HumanoidRootPart.Position - model.PrimaryPart.Position).Magnitude)
+        end
+        return 0
+    end
+
+    local function CreateHighlight(obj, color, nameID, textFunc, isDynamic)
+        local espID = nameID or obj:GetDebugId()
+        local hl = ESPFolder:FindFirstChild(espID)
+        if not hl then
+            hl = Instance.new("Highlight")
+            hl.Name = espID
+            hl.Adornee = obj
+            hl.Parent = ESPFolder
+            hl.FillColor = color
+            hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+            hl.FillTransparency = 0.5
+            hl.OutlineTransparency = 0
+            
+            local bb = Instance.new("BillboardGui")
+            bb.Adornee = obj
+            bb.Size = UDim2.new(0, 200, 0, 50)
+            bb.StudsOffset = Vector3.new(0, 3, 0)
+            bb.AlwaysOnTop = true
+            bb.Parent = hl
+            
+            local txt = Instance.new("TextLabel")
+            txt.Name = "InfoText"
+            txt.Size = UDim2.new(1, 0, 1, 0)
+            txt.BackgroundTransparency = 1
+            txt.TextColor3 = color
+            txt.TextStrokeTransparency = 0
+            txt.Font = Enum.Font.GothamBold
+            txt.TextSize = 13
+            txt.Parent = bb
+            
+            if isDynamic then
+                task.spawn(function()
+                    while hl and hl.Parent do
+                        if txt then txt.Text = textFunc() end
+                        task.wait(1) 
+                    end
+                end)
+            else
+                txt.Text = textFunc()
+            end
+
+            obj.AncestryChanged:Connect(function(_, parent) if not parent then hl:Destroy() end end)
+        end
+        return hl
+    end
+
+    -- GENERATOR ESP LOGIC
+    local function CheckGen(obj)
+        if obj.Name == "Generator" and obj:IsA("Model") then
+            local p = obj:FindFirstChild("Progress")
+            if p and p:IsA("NumberValue") then
+                local espID = obj:GetDebugId().."_GEN"
+                if p.Value >= 100 then
+                    local existing = ESPFolder:FindFirstChild(espID)
+                    if existing then existing:Destroy() end
+                    return 
+                end
+
+                local hl = CreateHighlight(obj, Color3.fromRGB(170, 0, 255), espID, function()
+                    return string.format("Generator [%d%%] \n[%dm]", math.floor(p.Value), GetDist(obj))
+                end, true)
+                
+                if hl then
+                    local changeConn
+                    changeConn = p.Changed:Connect(function(val)
+                        if val >= 100 then
+                            hl:Destroy()
+                            if changeConn then changeConn:Disconnect() end
+                        end
+                    end)
+                    local destroyConn
+                    destroyConn = hl.AncestryChanged:Connect(function(_, parent)
+                        if not parent then
+                            if changeConn then changeConn:Disconnect() end
+                            if destroyConn then destroyConn:Disconnect() end
+                        end
+                    end)
+                end
+            end
+        end
+    end
+
+    local function StartGenESP()
+        for _, v in pairs(workspace:GetDescendants()) do CheckGen(v) end
+        table.insert(GenConnections, workspace.DescendantAdded:Connect(function(v)
+            task.delay(0.5, function() if getgenv().ESPGen then CheckGen(v) end end)
+        end))
+    end
+
+    local function StopGenESP()
+        for _, v in pairs(GenConnections) do v:Disconnect() end
+        GenConnections = {}
+        for _, v in pairs(ESPFolder:GetChildren()) do if v.Name:find("_GEN") then v:Destroy() end end
+    end
+
+    -- PLAYER ESP LOGIC
+    local function IsKiller(player)
+        if player.Team and player.Team.Name == "Killers" then return true end
+        if player.Character and player.Character.Parent and player.Character.Parent.Name == "Killers" then return true end
+        return false
+    end
+
+    local function CheckPlayer(plr)
+        if plr == Players.LocalPlayer then return end
+        local function AddESP(char)
+            if not char then return end
+            local hum = char:WaitForChild("Humanoid", 5)
+            if hum then
+                local color = IsKiller(plr) and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 255)
+                local suffix = IsKiller(plr) and "_K" or "_S"
+                CreateHighlight(char, color, plr.Name..suffix, function()
+                    return string.format("%s [%d HP] \n[%dm]", plr.Name, math.floor(hum.Health), GetDist(char))
+                end, true)
+            end
+        end
+        if plr.Character then AddESP(plr.Character) end
+        plr.CharacterAdded:Connect(AddESP)
+    end
+
+    local function StartPlayerESP()
+        for _, v in pairs(Players:GetPlayers()) do CheckPlayer(v) end
+        table.insert(PlayerConnections, Players.PlayerAdded:Connect(CheckPlayer))
+    end
+
+    local function StopPlayerESP()
+        for _, v in pairs(PlayerConnections) do v:Disconnect() end
+        PlayerConnections = {}
+        for _, v in pairs(ESPFolder:GetChildren()) do if v.Name:find("_K") or v.Name:find("_S") then v:Destroy() end end
+    end
+
+    VisualSec:Toggle({ Title = "Hiện vị trí máy phát (Generator ESP)", Default = false, Callback = function(V) getgenv().ESPGen = V; if V then StartGenESP() else StopGenESP() end end })
+    VisualSec:Toggle({ Title = "Hiện vị trí người chơi (Player ESP)", Default = false, Callback = function(V) getgenv().ESPPlayer = V; if V then StartPlayerESP() else StopPlayerESP() end end })
+
+    getgenv().InfStamina = false
+    VisualSec:Toggle({ Title = "Bất tử thể lực (Inf Stamina)", Default = false, Callback = function(V) 
+        getgenv().InfStamina = V 
+        if V then task.spawn(function() while getgenv().InfStamina do task.wait(); pcall(function() require(game.ReplicatedStorage.Systems.Character.Game.Sprinting).Stamina = 100 end) end end) end 
+    end })
+end
+
+-- =================================================================
+-- [THÊM MỚI] ITEM ESP V3 (INSTANT HIDE)
+-- =================================================================
+do
+    getgenv().ItemESPActive = false
+    local ItemESPFolder = Instance.new("Folder", game.CoreGui); ItemESPFolder.Name = "Amethyst_ItemESP"
+    local VisualSec2 = Tabs.Player:Section({ Title = "Items & Traps", Opened = true, Box = false })
+    local Workspace = game:GetService("Workspace")
+    local ItemConnection = nil
+
+    local function IsValidGroundItem(item)
+        if not item or not item.Parent then return false end
+        if not item:IsDescendantOf(Workspace) then return false end
+        if item.Parent:FindFirstChild("Humanoid") then return false end
+        return true
+    end
+
+    local function CreateItemESP(obj, color, text)
+        local id = obj:GetDebugId()
+        if ItemESPFolder:FindFirstChild(id) then return end
+
+        local hl = Instance.new("Highlight")
+        hl.Name = id; hl.Adornee = obj; hl.Parent = ItemESPFolder
+        hl.FillColor = color; hl.OutlineColor = Color3.new(1, 1, 1)
+        hl.FillTransparency = 0.5; hl.OutlineTransparency = 0
+        
+        local bb = Instance.new("BillboardGui")
+        bb.Adornee = obj; bb.Size = UDim2.new(0, 100, 0, 50); bb.StudsOffset = Vector3.new(0, 2, 0); bb.AlwaysOnTop = true; bb.Parent = hl
+        
+        local label = Instance.new("TextLabel", bb)
+        label.Size = UDim2.new(1, 0, 1, 0); label.BackgroundTransparency = 1
+        label.Text = text; label.TextColor3 = color; label.TextStrokeTransparency = 0
+        label.Font = Enum.Font.GothamBold; label.TextSize = 12
+
+        local conn; conn = obj.AncestryChanged:Connect(function(_, newParent)
+            if not newParent or not IsValidGroundItem(obj) then
+                hl:Destroy()
+                if conn then conn:Disconnect() end
+            end
+        end)
+    end
+
+    local function CheckItem(obj)
+        if (obj:IsA("Model") or obj:IsA("Tool")) and IsValidGroundItem(obj) then
+            local name = obj.Name:lower()
+            if name:find("medkit") or name:find("med kit") then
+                CreateItemESP(obj, Color3.fromRGB(0, 255, 0), "MEDKIT")
+            elseif name:find("bloxy cola") or name:find("cola") or name:find("soda") then
+                CreateItemESP(obj, Color3.fromRGB(255, 100, 0), "COLA")
+            end
+        end
+    end
+
+    local function StartItemESP()
+        for _, obj in pairs(Workspace:GetDescendants()) do CheckItem(obj) end
+        if ItemConnection then ItemConnection:Disconnect() end
+        ItemConnection = Workspace.DescendantAdded:Connect(function(obj)
+            task.delay(0.5, function() if getgenv().ItemESPActive then CheckItem(obj) end end)
+        end)
+    end
+
+    local function StopItemESP()
+        if ItemConnection then ItemConnection:Disconnect() end
+        ItemESPFolder:ClearAllChildren()
+    end
+
+    VisualSec2:Toggle({ 
+        Title = "Hiện vật phẩm (Medkit/Cola)", 
+        Default = false, 
+        Callback = function(v) 
+            getgenv().ItemESPActive = v 
+            if v then StartItemESP() else StopItemESP() end 
+        end 
+    })
+end
+
+-- =================================================================
+-- [THÊM MỚI] ESP TAPH (TRAP ESP) - FIXED
+-- =================================================================
+do
+    getgenv().ESPTaphActive = false
+    local VisualSec3 = Tabs.Player:Section({ Title = "Taph", Opened = true, Box = false })
+    local ESP_Folder = Instance.new("Folder", game.CoreGui)
+    ESP_Folder.Name = "Amethyst_TaphTrapESP"
+    local Workspace = game:GetService("Workspace")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local TaphConnection = nil 
+
+    local function CreateHighlight(model, color, text)
+        local id = model:GetDebugId()
+        if ESP_Folder:FindFirstChild(id) then return end
+
+        local hl = Instance.new("Highlight")
+        hl.Name = id
+        hl.Adornee = model
+        hl.Parent = ESP_Folder
+        hl.FillColor = color
+        hl.OutlineColor = Color3.new(1, 1, 1)
+        hl.FillTransparency = 0.5
+        hl.OutlineTransparency = 0
+
+        local textPart = model.PrimaryPart
+        if not textPart then
+            for _, v in pairs(model:GetChildren()) do if v:IsA("BasePart") then textPart = v; break end end
+        end
+        if not textPart then textPart = model end
+
+        local bb = Instance.new("BillboardGui")
+        bb.Adornee = textPart
+        bb.Size = UDim2.new(0, 100, 0, 50)
+        bb.StudsOffset = Vector3.new(0, 3, 0)
+        bb.AlwaysOnTop = true
+        bb.Parent = hl 
+        
+        local lbl = Instance.new("TextLabel", bb)
+        lbl.Size = UDim2.new(1, 0, 1, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.Text = text
+        lbl.TextColor3 = color
+        lbl.TextStrokeTransparency = 0
+        lbl.Font = Enum.Font.GothamBold
+        lbl.TextSize = 12
+
+        local conn; conn = model.AncestryChanged:Connect(function(_, p) 
+            if not p then 
+                hl:Destroy() 
+                if conn then conn:Disconnect() end
+            end
+        end)
+    end
+
+    local function CheckObject(obj)
+        if obj:IsA("Model") then
+            local name = obj.Name
+            
+            if obj.Parent == LocalPlayer.Character or obj:IsDescendantOf(LocalPlayer.Character) or obj.Parent == LocalPlayer:FindFirstChild("Backpack") then 
+                return 
+            end
+
+            if name:match("TaphTripwire$") then
+                if obj.Parent and obj.Parent ~= LocalPlayer.Character then
+                    CreateHighlight(obj, Color3.fromRGB(255, 0, 255), "TRIPWIRE")
+                end
+            elseif name == "SubspaceTripmine" then
+                 CreateHighlight(obj, Color3.fromRGB(255, 0, 255), "SUBSPACE TRIPMINE")
+            end
+        end
+    end
+
+    local function StartScanning()
+        for _, obj in pairs(Workspace:GetDescendants()) do CheckObject(obj) end
+        if TaphConnection then TaphConnection:Disconnect() end
+        TaphConnection = Workspace.DescendantAdded:Connect(function(obj)
+            task.delay(0.5, function() if getgenv().ESPTaphActive and obj.Parent then CheckObject(obj) end end)
+        end)
+    end
+
+    local function StopScanning()
+        if TaphConnection then TaphConnection:Disconnect() end
+        ESP_Folder:ClearAllChildren()
+    end
+
+    VisualSec3:Toggle({ 
+        Title = "Hiện bẫy Taph (Trap ESP)", 
+        Default = false, 
+        Callback = function(state) 
+            getgenv().ESPTaphActive = state 
+            if state then StartScanning() else StopScanning() end
+        end 
+    })
+end
+
+-- =================================================================
+-- [THÊM MỚI] ESP BUILDERMAN (INTEGRATED & FIXED COLOR LOCK)
+-- =================================================================
+do
+    getgenv().ESPBuildermanActive = false
+    local VisualSec4 = Tabs.Player:Section({ Title = "Builderman", Opened = true, Box = false })
+    local ESP_Folder = Instance.new("Folder", game.CoreGui)
+    ESP_Folder.Name = "Amethyst_BuildermanESP"
+    local Workspace = game:GetService("Workspace")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local BuildermanConn = nil
+
+    local function CreateHighlight(model, color, text)
+        local id = model:GetDebugId()
+        if ESP_Folder:FindFirstChild(id) then return end
+
+        local targetPart = nil
+        if model:IsA("Model") then
+            for _, part in pairs(model:GetDescendants()) do
+                if part:IsA("BasePart") and part.Anchored == true then targetPart = part; break end
+            end
+        else
+            targetPart = model
+        end
+        if not targetPart then targetPart = model end
+        
+        local existingHighlight = model:FindFirstChildOfClass("Highlight")
+        local hl
+        
+        if existingHighlight then hl = existingHighlight; hl.Name = id else hl = Instance.new("Highlight"); hl.Name = id; hl.Adornee = model; hl.Parent = ESP_Folder end
+        
+        hl.FillColor = color
+        hl.OutlineColor = Color3.new(1, 1, 1)
+        hl.FillTransparency = 0.5
+        hl.OutlineTransparency = 0
+        
+        local lockConn; lockConn = hl:GetPropertyChangedSignal("FillColor"):Connect(function()
+            if hl.FillColor ~= color then hl.FillColor = color end
+        end)
+        
+        if not hl:FindFirstChild("InfoBillboard") then
+            local bb = Instance.new("BillboardGui"); bb.Name = "InfoBillboard"; bb.Adornee = targetPart; bb.Size = UDim2.new(0, 200, 0, 50); bb.StudsOffset = Vector3.new(0, 3, 0); bb.AlwaysOnTop = true; bb.Parent = hl 
+            local lbl = Instance.new("TextLabel", bb); lbl.Size = UDim2.new(1, 0, 1, 0); lbl.BackgroundTransparency = 1; lbl.Text = text; lbl.TextColor3 = color; lbl.TextStrokeTransparency = 0; lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 13
+        end
+        
+        local conn; conn = model.AncestryChanged:Connect(function(_, p) 
+            if not p then 
+                if hl and hl.Parent == ESP_Folder then hl:Destroy() end
+                if conn then conn:Disconnect() end
+                if lockConn then lockConn:Disconnect() end 
+            end
+        end)
+    end
+
+    local function CheckObject(obj)
+        if obj:IsA("Model") then
+            local name = obj.Name
+            
+            if obj.Parent == LocalPlayer.Character or obj:IsDescendantOf(LocalPlayer.Character) or obj.Parent == LocalPlayer:FindFirstChild("Backpack") then return end
+
+            if name == "BuildermanSentry" then
+                 CreateHighlight(obj, Color3.fromRGB(255, 0, 255), "BuildermanSentry")
+            elseif name == "BuildermanDispenser" then
+                 CreateHighlight(obj, Color3.fromRGB(255, 0, 255), "BuildermanDispenser")
+            end
+        end
+    end
+
+    local function StartScanning()
+        for _, obj in pairs(Workspace:GetDescendants()) do CheckObject(obj) end
+        if BuildermanConn then BuildermanConn:Disconnect() end
+        BuildermanConn = Workspace.DescendantAdded:Connect(function(obj)
+            task.delay(0.5, function() if getgenv().ESPBuildermanActive and obj.Parent then CheckObject(obj) end end)
+        end)
+    end
+
+    local function StopScanning()
+        if BuildermanConn then BuildermanConn:Disconnect() end
+        ESP_Folder:ClearAllChildren()
+    end
+
+    VisualSec4:Toggle({ 
+        Title = "Hiện trụ Builderman (Sentry/Dispenser)", 
+        Default = false, 
+        Callback = function(state) 
+            getgenv().ESPBuildermanActive = state 
+            if state then StartScanning() else StopScanning() end
+        end 
+    })
+end
+
+-- =================================================================
+-- [THÊM MỚI] ESP CLONE 007N7 (MOVE TO VISUALS)
+-- =================================================================
+do
+    getgenv().ESPClone007Active = false
+    local VisualSec5 = Tabs.Player:Section({ Title = "Clone 007N7", Opened = true, Box = false })
+    local ESP_Folder = Instance.new("Folder", game.CoreGui)
+    ESP_Folder.Name = "Amethyst_007CloneESP"
+    local Connections = {}
+    local Workspace = game:GetService("Workspace")
+    local Players = game:GetService("Players")
+
+    local function CreateCloneESP(model)
+        local id = model:GetDebugId()
+        if ESP_Folder:FindFirstChild(id) then return end
+
+        local hl = Instance.new("Highlight")
+        hl.Name = id
+        hl.Adornee = model
+        hl.Parent = ESP_Folder
+        hl.FillColor = Color3.fromRGB(0, 255, 0)
+        hl.OutlineColor = Color3.fromRGB(0, 255, 0)
+        hl.FillTransparency = 0.5
+        hl.OutlineTransparency = 0
+
+        local bb = Instance.new("BillboardGui")
+        bb.Adornee = model
+        bb.Size = UDim2.new(0, 100, 0, 50)
+        bb.StudsOffset = Vector3.new(0, 3, 0)
+        bb.AlwaysOnTop = true
+        bb.Parent = hl
+        
+        local txt = Instance.new("TextLabel", bb)
+        txt.Size = UDim2.new(1, 0, 1, 0)
+        txt.BackgroundTransparency = 1
+        txt.Text = "Clone"
+        txt.TextColor3 = Color3.fromRGB(0, 255, 0)
+        txt.TextStrokeTransparency = 0
+        txt.Font = Enum.Font.GothamBold
+        txt.TextSize = 14
+        
+        local humanoid = model:FindFirstChild("Humanoid")
+        if humanoid then
+            local diedConn; diedConn = humanoid.Died:Connect(function() hl:Destroy(); if diedConn then diedConn:Disconnect() end end)
+        end
+
+        local ancestryConn; ancestryConn = model.AncestryChanged:Connect(function(_, p) if not p then hl:Destroy(); if ancestryConn then ancestryConn:Disconnect() end end end)
+    end
+
+    local function CheckObject(obj)
+        if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj:FindFirstChild("HumanoidRootPart") then
+            local humanoid = obj:FindFirstChild("Humanoid")
+            if humanoid and humanoid.Health > 0 then
+                if not Players:GetPlayerFromCharacter(obj) then
+                    if obj.Name == "007N7" or obj.Name == "007n7" then CreateCloneESP(obj) end
+                end
+            end
+        end
+    end
+
+    local function StartScanning()
+        for _, obj in pairs(Workspace:GetDescendants()) do task.spawn(function() CheckObject(obj) end) end
+        local conn = Workspace.DescendantAdded:Connect(function(obj)
+            task.delay(0.5, function() if getgenv().ESPClone007Active and obj.Parent then CheckObject(obj) end end)
+        end)
+        table.insert(Connections, conn)
+    end
+
+    local function StopScanning()
+        ESP_Folder:ClearAllChildren()
+        for _, conn in ipairs(Connections) do conn:Disconnect() end
+        Connections = {}
+    end
+
+    VisualSec5:Toggle({ 
+        Title = "Hiện phân thân (Clone 007N7)", 
+        Default = false, 
+        Callback = function(state) 
+            getgenv().ESPClone007Active = state 
+            if state then StartScanning() else StopScanning() end
+        end 
+    })
+end
+
+-- =================================================================
+-- [INTEGRATED] PIZZA DELIVERY RIG ESP (SMART DELAY - GREEN)
+-- =================================================================
+do
+    local PizzaSec = Tabs.Player:Section({ Title = "Pizza Rig Tracker", Opened = true, Box = false })
+    local ESPFolder = Instance.new("Folder", game.CoreGui); ESPFolder.Name = "Amethyst_PizzaRigESP"
+    getgenv().TrackPizzaRig = false
+    local CustomPizzaName = "PizzaDeliveryRig"
+    local PizzaConn = nil
+
+    local function HandlePizzaRig(obj)
+        if getgenv().TrackPizzaRig and obj:IsA("Model") then
+            if obj.Name == "PizzaDeliveryRig" then
+                task.spawn(function()
+                    task.wait(1) 
+                    if obj and obj.Parent then
+                        for _, c in pairs(obj:GetChildren()) do if c:IsA("Highlight") then c:Destroy() end end
+                        
+                        local id = obj:GetDebugId()
+                        if ESPFolder:FindFirstChild(id) then return end
+                        
+                        local hl = Instance.new("Highlight", ESPFolder); hl.Name = id; hl.Adornee = obj
+                        hl.FillColor = Color3.fromRGB(0, 255, 0) 
+                        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        hl.FillTransparency = 0.5; hl.OutlineTransparency = 0
+                        
+                        local bb = Instance.new("BillboardGui", hl); bb.Adornee = obj; bb.Size = UDim2.new(0,200,0,50); bb.AlwaysOnTop = true; bb.StudsOffset = Vector3.new(0,4.5,0)
+                        local txt = Instance.new("TextLabel", bb); txt.Size = UDim2.new(1,0,1,0); txt.BackgroundTransparency = 1
+                        txt.TextColor3 = Color3.fromRGB(0, 255, 0) 
+                        txt.TextStrokeTransparency = 0; txt.Font = Enum.Font.GothamBlack; txt.TextSize = 15
+                        txt.Text = CustomPizzaName 
+                        
+                        obj.AncestryChanged:Connect(function(_, p) if not p then hl:Destroy() end end)
+                    end
+                end)
+            end
+        end
+    end
+
+    PizzaSec:Toggle({ 
+        Title = "Hiện Bot Coolkid (PizzaDeliveryRig)", 
+        Default = false, 
+        Callback = function(v) 
+            getgenv().TrackPizzaRig = v 
+            if v then 
+                for _, obj in pairs(game.Workspace:GetDescendants()) do HandlePizzaRig(obj) end
+                if PizzaConn then PizzaConn:Disconnect() end
+                PizzaConn = game.Workspace.DescendantAdded:Connect(HandlePizzaRig)
+            else
+                if PizzaConn then PizzaConn:Disconnect() end
+                for _, child in pairs(ESPFolder:GetChildren()) do child:Destroy() end
+            end 
+        end 
+    })
+end
+
+-- Settings Tab
+local SettingsSec = Tabs.Settings:Section({ Title = "UI Settings", Opened = true, Box = false })
+SettingsSec:Button({ Title = "Tắt Menu (Unload UI)", Callback = function() Window:Destroy() end })
+
+Notify("AMETHYST V3.3", "Loaded Successfully!", 5)
