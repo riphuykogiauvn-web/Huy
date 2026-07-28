@@ -4,163 +4,75 @@ local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footag
 -- Khởi tạo Cửa sổ chính (Window)
 local Window = WindUI:CreateWindow({
     Title = "AMETHYST HUB", 
-    Icon = "diamond", -- Icon từ Lucide (vd: diamond, home, user...)
+    Icon = "diamond", 
     Author = "HUYKOGIAUVN",
-    Folder = "AmethystHub_Config", -- Thư mục lưu cấu hình
-    Size = UDim2.fromOffset(600, 450), -- Kích thước menu
-    Transparent = true, -- Nền trong suốt siêu đẹp
-    Theme = "Dark", -- Theme: Dark, Light, Rose, v.v.
+    Folder = "AmethystHub_Config", 
+    Size = UDim2.fromOffset(600, 450), 
+    Transparent = true, 
+    Theme = "Dark", 
     SideBarWidth = 180,
     HasOutline = true
 })
 
--- Tạo nút mở/đóng Menu nổi trên màn hình (Hỗ trợ tốt cho Mobile/Delta X)
+-- Tạo nút mở/đóng Menu nổi trên màn hình cho Delta X
 Window:EditOpenButton({
     Title = "AMETHYST HUB",
     Icon = "menu",
     CornerRadius = UDim.new(0, 10),
     StrokePixels = 1,
-    StrokeColor = Color3.fromRGB(138, 43, 226) -- Màu viền tím Amethyst
+    StrokeColor = Color3.fromRGB(138, 43, 226) 
 })
 
--- Thông báo khi load script thành công
+-------------------------------------------------------------------------
+-- TẠO CÁC TAB & CHUẨN BỊ GIAO DIỆN "ĐANG UPDATE"
+-------------------------------------------------------------------------
+
+-- 1. MAIN (Icon: Ngôi nhà)
+local TabMain = Window:Tab({ Title = "Main", Icon = "home" })
+TabMain:Paragraph({
+    Title = "Thông Báo",
+    Desc = "Chức năng đang được Update..."
+})
+
+-- 2. STAMINA (Icon: Năng lượng)
+local TabStamina = Window:Tab({ Title = "Stamina", Icon = "zap" })
+TabStamina:Paragraph({
+    Title = "Thông Báo",
+    Desc = "Chức năng đang được Update..."
+})
+
+-- 3. SURVIVE (Icon: Hình người)
+local TabSurvive = Window:Tab({ Title = "Survive", Icon = "user" })
+TabSurvive:Paragraph({
+    Title = "Thông Báo",
+    Desc = "Chức năng đang được Update..."
+})
+
+-- 4. KILLER (Icon: Đầu lâu)
+local TabKiller = Window:Tab({ Title = "Killer", Icon = "skull" })
+TabKiller:Paragraph({
+    Title = "Thông Báo",
+    Desc = "Chức năng đang được Update..."
+})
+
+-- 5. GENERATOR (Icon: Bánh răng)
+local TabGenerator = Window:Tab({ Title = "Generator", Icon = "settings" })
+TabGenerator:Paragraph({
+    Title = "Thông Báo",
+    Desc = "Chức năng đang được Update..."
+})
+
+-- 6. VISUAL (Icon: Con mắt)
+local TabVisual = Window:Tab({ Title = "Visual", Icon = "eye" })
+TabVisual:Paragraph({
+    Title = "Thông Báo",
+    Desc = "Chức năng đang được Update..."
+})
+
+-- Hiển thị thông báo góc màn hình khi load xong form
 WindUI:Notify({
-    Title = "Hệ Thống",
-    Content = "AMETHYST HUB đã tải thành công trên Delta X!",
-    Duration = 5,
-    Icon = "check-circle"
-})
-
--------------------------------------------------------------------------
--- TẠO CÁC TAB CHÍNH
--------------------------------------------------------------------------
-local TabTrangChu = Window:Tab({ Title = "Trang Chủ", Icon = "home" })
-local TabChienDau = Window:Tab({ Title = "Chiến Đấu", Icon = "swords" })
-local TabNhanVat = Window:Tab({ Title = "Nhân Vật", Icon = "user" })
-local TabCaiDat = Window:Tab({ Title = "Cài Đặt", Icon = "settings" })
-
--------------------------------------------------------------------------
--- NỘI DUNG TAB TRANG CHỦ
--------------------------------------------------------------------------
-TabTrangChu:Section({ Title = "Thông Tin Chung" })
-
-TabTrangChu:Button({
-    Title = "Lấy thông tin người chơi",
-    Desc = "In tên và máu của bạn vào Console",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        WindUI:Notify({
-            Title = "Thông Tin",
-            Content = "Tên: " .. player.Name .. " | Máu: " .. tostring(player.Character.Humanoid.Health),
-            Duration = 3
-        })
-    end
-})
-
--------------------------------------------------------------------------
--- NỘI DUNG TAB CHIẾN ĐẤU
--------------------------------------------------------------------------
-TabChienDau:Section({ Title = "Auto Farm (Tự Động)" })
-
-TabChienDau:Toggle({
-    Title = "Bật Auto Farm",
-    Desc = "Tự động gom và đánh quái",
-    Default = false,
-    Callback = function(State)
-        _G.AutoFarm = State
-        if State then
-            WindUI:Notify({Title = "Auto Farm", Content = "Đã BẬT Auto Farm", Duration = 2})
-            -- Vòng lặp auto farm ở đây
-            spawn(function()
-                while _G.AutoFarm do
-                    task.wait(0.1)
-                    -- Code logic farm của bạn
-                end
-            end)
-        else
-            WindUI:Notify({Title = "Auto Farm", Content = "Đã TẮT Auto Farm", Duration = 2, Icon = "x-circle"})
-        end
-    end
-})
-
-TabChienDau:Dropdown({
-    Title = "Chọn Quái Vật (Mob)",
-    Desc = "Chọn bãi quái để farm",
-    Options = {"Quái Cấp 1", "Quái Cấp 10", "Boss Định Mệnh", "Kỵ Sĩ Bóng Đêm"},
-    Default = "Quái Cấp 1",
-    Callback = function(Value)
-        WindUI:Notify({
-            Title = "Mục Tiêu Mới",
-            Content = "Đã chọn: " .. Value,
-            Duration = 2
-        })
-    end
-})
-
--------------------------------------------------------------------------
--- NỘI DUNG TAB NHÂN VẬT
--------------------------------------------------------------------------
-TabNhanVat:Section({ Title = "Chỉ Số Tốc Độ & Nhảy" })
-
-TabNhanVat:Slider({
-    Title = "Tốc Độ Chạy (WalkSpeed)",
-    Desc = "Tăng tốc độ di chuyển của nhân vật",
-    Step = 1,
-    Min = 16,
-    Max = 200,
-    Default = 16,
-    Callback = function(Value)
-        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-        end
-    end
-})
-
-TabNhanVat:Slider({
-    Title = "Độ Cao Nhảy (JumpPower)",
-    Desc = "Giúp bạn nhảy cao hơn bình thường",
-    Step = 1,
-    Min = 50,
-    Max = 300,
-    Default = 50,
-    Callback = function(Value)
-        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-            game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
-        end
-    end
-})
-
-TabNhanVat:Section({ Title = "Khác" })
-
-TabNhanVat:Input({
-    Title = "Nhập Tên Mục Tiêu",
-    Desc = "Dùng để Teleport đến người chơi khác",
-    PlaceholderText = "Tên người chơi...",
-    ClearTextOnFocus = true,
-    Callback = function(Text)
-        WindUI:Notify({ Title = "Dịch Chuyển", Content = "Đang tìm kiếm: " .. Text, Duration = 3 })
-    end
-})
-
--------------------------------------------------------------------------
--- NỘI DUNG TAB CÀI ĐẶT
--------------------------------------------------------------------------
-TabCaiDat:Section({ Title = "Cấu Hình UI" })
-
-TabCaiDat:Keybind({
-    Title = "Phím Ẩn/Hiện Menu",
-    Desc = "Bấm phím này để bật tắt giao diện",
-    Default = Enum.KeyCode.RightControl,
-    Callback = function()
-        -- WindUI tự động xử lý việc ẩn hiện, nhưng bạn có thể thêm logic extra ở đây
-        print("Đã bấm phím ẩn/hiện")
-    end
-})
-
-TabCaiDat:Button({
-    Title = "Hủy Script (Destroy GUI)",
-    Desc = "Xóa hoàn toàn giao diện khỏi màn hình",
-    Callback = function()
-        WindUI:Destroy()
-    end
+    Title = "AMETHYST HUB",
+    Content = "Tải thành công bộ khung UI (Đang chờ update chức năng)",
+    Duration = 3,
+    Icon = "check"
 })
