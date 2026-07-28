@@ -1,278 +1,166 @@
+-- Tải thư viện WindUI
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
+-- Khởi tạo Cửa sổ chính (Window)
 local Window = WindUI:CreateWindow({
-    Title = "VeLusx",
-    Icon = "sparkles",
-    Author = "Zan",
-    Folder = "VeLusx_Menu",
-    Size = UDim2.fromOffset(760, 520),
-    Theme = "Dark",
-    HidePanelBackground = false,
-    NewElements = true,
+    Title = "AMETHYST HUB", 
+    Icon = "diamond", -- Icon từ Lucide (vd: diamond, home, user...)
+    Author = "HUYKOGIAUVN",
+    Folder = "AmethystHub_Config", -- Thư mục lưu cấu hình
+    Size = UDim2.fromOffset(600, 450), -- Kích thước menu
+    Transparent = true, -- Nền trong suốt siêu đẹp
+    Theme = "Dark", -- Theme: Dark, Light, Rose, v.v.
+    SideBarWidth = 180,
+    HasOutline = true
 })
 
-pcall(function()
-    Window:SetBackgroundTransparency(0.18)
-end)
-
-pcall(function()
-    Window:SetBackgroundImageTransparency(1)
-end)
-
-local MainTab = Window:Tab({
-    Title = "Main",
-    Icon = "home",
+-- Tạo nút mở/đóng Menu nổi trên màn hình (Hỗ trợ tốt cho Mobile/Delta X)
+Window:EditOpenButton({
+    Title = "AMETHYST HUB",
+    Icon = "menu",
+    CornerRadius = UDim.new(0, 10),
+    StrokePixels = 1,
+    StrokeColor = Color3.fromRGB(138, 43, 226) -- Màu viền tím Amethyst
 })
 
-local MiscTab = Window:Tab({
-    Title = "Misc",
-    Icon = "settings-2",
+-- Thông báo khi load script thành công
+WindUI:Notify({
+    Title = "Hệ Thống",
+    Content = "AMETHYST HUB đã tải thành công trên Delta X!",
+    Duration = 5,
+    Icon = "check-circle"
 })
 
-local CombatTab = Window:Tab({
-    Title = "Combat",
-    Icon = "swords",
-})
+-------------------------------------------------------------------------
+-- TẠO CÁC TAB CHÍNH
+-------------------------------------------------------------------------
+local TabTrangChu = Window:Tab({ Title = "Trang Chủ", Icon = "home" })
+local TabChienDau = Window:Tab({ Title = "Chiến Đấu", Icon = "swords" })
+local TabNhanVat = Window:Tab({ Title = "Nhân Vật", Icon = "user" })
+local TabCaiDat = Window:Tab({ Title = "Cài Đặt", Icon = "settings" })
 
-local PlayerTab = Window:Tab({
-    Title = "Player",
-    Icon = "user",
-})
+-------------------------------------------------------------------------
+-- NỘI DUNG TAB TRANG CHỦ
+-------------------------------------------------------------------------
+TabTrangChu:Section({ Title = "Thông Tin Chung" })
 
-local VisualTab = Window:Tab({
-    Title = "Visual",
-    Icon = "eye",
-})
-
-local ConfigTab = Window:Tab({
-    Title = "Config",
-    Icon = "folder",
-})
-
-MainTab:Toggle({
-    Title = "Menu Active",
-    Desc = "Chỉ là giao diện demo",
-    Flag = "menu_active",
-    Value = true,
-    Callback = function(v)
-        print("Menu Active:", v)
-    end,
-})
-
-MainTab:Button({
-    Title = "Button Test",
-    Icon = "zap",
+TabTrangChu:Button({
+    Title = "Lấy thông tin người chơi",
+    Desc = "In tên và máu của bạn vào Console",
     Callback = function()
-        print("Button Test")
-    end,
+        local player = game.Players.LocalPlayer
+        WindUI:Notify({
+            Title = "Thông Tin",
+            Content = "Tên: " .. player.Name .. " | Máu: " .. tostring(player.Character.Humanoid.Health),
+            Duration = 3
+        })
+    end
 })
 
-MainTab:Input({
-    Title = "Search Box",
-    Placeholder = "Nhập nội dung...",
-    Callback = function(text)
-        print("Input:", text)
-    end,
+-------------------------------------------------------------------------
+-- NỘI DUNG TAB CHIẾN ĐẤU
+-------------------------------------------------------------------------
+TabChienDau:Section({ Title = "Auto Farm (Tự Động)" })
+
+TabChienDau:Toggle({
+    Title = "Bật Auto Farm",
+    Desc = "Tự động gom và đánh quái",
+    Default = false,
+    Callback = function(State)
+        _G.AutoFarm = State
+        if State then
+            WindUI:Notify({Title = "Auto Farm", Content = "Đã BẬT Auto Farm", Duration = 2})
+            -- Vòng lặp auto farm ở đây
+            spawn(function()
+                while _G.AutoFarm do
+                    task.wait(0.1)
+                    -- Code logic farm của bạn
+                end
+            end)
+        else
+            WindUI:Notify({Title = "Auto Farm", Content = "Đã TẮT Auto Farm", Duration = 2, Icon = "x-circle"})
+        end
+    end
 })
 
-MiscTab:Toggle({
-    Title = "Auto Open",
-    Desc = "Bật/tắt thử giao diện",
-    Flag = "auto_open",
-    Value = false,
-    Callback = function(v)
-        print("Auto Open:", v)
-    end,
+TabChienDau:Dropdown({
+    Title = "Chọn Quái Vật (Mob)",
+    Desc = "Chọn bãi quái để farm",
+    Options = {"Quái Cấp 1", "Quái Cấp 10", "Boss Định Mệnh", "Kỵ Sĩ Bóng Đêm"},
+    Default = "Quái Cấp 1",
+    Callback = function(Value)
+        WindUI:Notify({
+            Title = "Mục Tiêu Mới",
+            Content = "Đã chọn: " .. Value,
+            Duration = 2
+        })
+    end
 })
 
-MiscTab:Slider({
-    Title = "UI Scale",
-    Desc = "Chỉ để nhìn giống menu video",
-    Flag = "ui_scale",
-    Value = {
-        Min = 50,
-        Max = 150,
-        Default = 100
-    },
+-------------------------------------------------------------------------
+-- NỘI DUNG TAB NHÂN VẬT
+-------------------------------------------------------------------------
+TabNhanVat:Section({ Title = "Chỉ Số Tốc Độ & Nhảy" })
+
+TabNhanVat:Slider({
+    Title = "Tốc Độ Chạy (WalkSpeed)",
+    Desc = "Tăng tốc độ di chuyển của nhân vật",
     Step = 1,
-    Callback = function(v)
-        print("UI Scale:", v)
-    end,
+    Min = 16,
+    Max = 200,
+    Default = 16,
+    Callback = function(Value)
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+        end
+    end
 })
 
-MiscTab:Dropdown({
-    Title = "Preset",
-    Desc = "Chọn kiểu hiển thị",
-    Flag = "preset",
-    SearchBarEnabled = true,
-    Values = {
-        "Default",
-        "Glass",
-        "Soft Purple",
-        "Dark Pink",
-        "Minimal"
-    },
-    Value = "Glass",
-    Callback = function(v)
-        print("Preset:", v)
-    end,
-})
-
-CombatTab:Toggle({
-    Title = "Combat Panel",
-    Desc = "Chỉ là nút demo",
-    Flag = "combat_panel",
-    Value = false,
-    Callback = function(v)
-        print("Combat Panel:", v)
-    end,
-})
-
-CombatTab:Slider({
-    Title = "Attack Speed",
-    Desc = "Thanh kéo test",
-    Flag = "attack_speed",
-    Value = {
-        Min = 0,
-        Max = 100,
-        Default = 25
-    },
+TabNhanVat:Slider({
+    Title = "Độ Cao Nhảy (JumpPower)",
+    Desc = "Giúp bạn nhảy cao hơn bình thường",
     Step = 1,
-    Callback = function(v)
-        print("Attack Speed:", v)
-    end,
+    Min = 50,
+    Max = 300,
+    Default = 50,
+    Callback = function(Value)
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+        end
+    end
 })
 
-CombatTab:Button({
-    Title = "Test Combat Button",
-    Icon = "flame",
+TabNhanVat:Section({ Title = "Khác" })
+
+TabNhanVat:Input({
+    Title = "Nhập Tên Mục Tiêu",
+    Desc = "Dùng để Teleport đến người chơi khác",
+    PlaceholderText = "Tên người chơi...",
+    ClearTextOnFocus = true,
+    Callback = function(Text)
+        WindUI:Notify({ Title = "Dịch Chuyển", Content = "Đang tìm kiếm: " .. Text, Duration = 3 })
+    end
+})
+
+-------------------------------------------------------------------------
+-- NỘI DUNG TAB CÀI ĐẶT
+-------------------------------------------------------------------------
+TabCaiDat:Section({ Title = "Cấu Hình UI" })
+
+TabCaiDat:Keybind({
+    Title = "Phím Ẩn/Hiện Menu",
+    Desc = "Bấm phím này để bật tắt giao diện",
+    Default = Enum.KeyCode.RightControl,
     Callback = function()
-        print("Combat button pressed")
-    end,
+        -- WindUI tự động xử lý việc ẩn hiện, nhưng bạn có thể thêm logic extra ở đây
+        print("Đã bấm phím ẩn/hiện")
+    end
 })
 
-PlayerTab:Slider({
-    Title = "WalkSpeed",
-    Desc = "Thanh kéo test",
-    Flag = "walkspeed",
-    Value = {
-        Min = 0,
-        Max = 100,
-        Default = 16
-    },
-    Step = 1,
-    Callback = function(v)
-        print("WalkSpeed:", v)
-    end,
-})
-
-PlayerTab:Slider({
-    Title = "JumpPower",
-    Desc = "Thanh kéo test",
-    Flag = "jumppower",
-    Value = {
-        Min = 0,
-        Max = 200,
-        Default = 50
-    },
-    Step = 1,
-    Callback = function(v)
-        print("JumpPower:", v)
-    end,
-})
-
-PlayerTab:Toggle({
-    Title = "Auto Sprint",
-    Desc = "Toggle test",
-    Flag = "auto_sprint",
-    Value = false,
-    Callback = function(v)
-        print("Auto Sprint:", v)
-    end,
-})
-
-VisualTab:Dropdown({
-    Title = "Theme",
-    Desc = "Đổi theme có sẵn",
-    Flag = "theme_select",
-    SearchBarEnabled = true,
-    Values = {
-        "Dark",
-        "Light",
-        "Rose",
-        "Plant",
-        "Indigo",
-        "Sky",
-        "Violet",
-        "Amber"
-    },
-    Value = "Dark",
-    Callback = function(theme)
-        pcall(function()
-            WindUI:SetTheme(theme)
-        end)
-        print("Theme:", theme)
-    end,
-})
-
-VisualTab:Toggle({
-    Title = "Glass Mode",
-    Desc = "Làm menu mờ hơn",
-    Flag = "glass_mode",
-    Value = true,
-    Callback = function(v)
-        pcall(function()
-            if v then
-                Window:SetBackgroundTransparency(0.18)
-            else
-                Window:SetBackgroundTransparency(0.08)
-            end
-        end)
-        print("Glass Mode:", v)
-    end,
-})
-
-VisualTab:Button({
-    Title = "Refresh Look",
-    Icon = "refresh-cw",
+TabCaiDat:Button({
+    Title = "Hủy Script (Destroy GUI)",
+    Desc = "Xóa hoàn toàn giao diện khỏi màn hình",
     Callback = function()
-        pcall(function()
-            Window:SetBackgroundTransparency(0.18)
-            Window:SetBackgroundImageTransparency(1)
-        end)
-        print("Refreshed")
-    end,
+        WindUI:Destroy()
+    end
 })
-
-ConfigTab:Button({
-    Title = "Save Config",
-    Icon = "save",
-    Callback = function()
-        print("Save config pressed")
-    end,
-})
-
-ConfigTab:Button({
-    Title = "Load Config",
-    Icon = "folder-open",
-    Callback = function()
-        print("Load config pressed")
-    end,
-})
-
-ConfigTab:Button({
-    Title = "Reset UI",
-    Icon = "rotate-ccw",
-    Callback = function()
-        print("Reset pressed")
-    end,
-})
-
-pcall(function()
-    WindUI:Notify({
-        Title = "WindUI",
-        Content = "Menu loaded successfully",
-        Icon = "check",
-        Duration = 2
-    })
-end)
