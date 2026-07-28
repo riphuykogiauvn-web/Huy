@@ -28,7 +28,7 @@ Window:EditOpenButton({
 -------------------------------------------------------------------------
 
 -- 1. MAIN (Icon: Ngôi nhà)
-local TabMain = Window:Tab({ Title = "Main", Icon = "home" })
+local TabMain = Window:Tab({ Title = "Main", Icon = "house" })
 TabMain:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
