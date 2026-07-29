@@ -28,81 +28,73 @@ Window:EditOpenButton({
 -------------------------------------------------------------------------
 
 -- ======================================================================
--- ĐẦU MỤC: HOME (Tạo thành Tab phân cách thư mục để chắc chắn hiển thị)
+-- ĐẦU MỤC: HOME (Thử nghiệm ép tạo thư mục xổ xuống bằng trick Collapsible)
 -- ======================================================================
-local FolderHome = Window:Tab({ Title = "--- HOME ---", Icon = "folder" })
-FolderHome:Paragraph({
-    Title = "Thư Mục HOME",
-    Desc = "Đây là mục phân loại, các tab bên dưới thuộc về nhóm HOME."
-})
+local FolderHome = Window:Tab({ Title = "HOME", Icon = "folder-tree", Collapsible = true })
 
 -- INFORMATION (Icon: info)
-local TabInformation = Window:Tab({ Title = "Information", Icon = "info" })
+local TabInformation = Window:Tab({ Title = "Information", Icon = "info", Parent = FolderHome })
 TabInformation:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- ======================================================================
--- ĐẦU MỤC: MAIN (Tạo thành Tab phân cách thư mục để chắc chắn hiển thị)
+-- ĐẦU MỤC: MAIN (Thử nghiệm ép tạo thư mục xổ xuống bằng trick Collapsible)
 -- ======================================================================
-local FolderMain = Window:Tab({ Title = "--- MAIN ---", Icon = "folder" })
-FolderMain:Paragraph({
-    Title = "Thư Mục MAIN",
-    Desc = "Đây là mục phân loại, các tab bên dưới thuộc về nhóm MAIN."
-})
+local FolderMain = Window:Tab({ Title = "MAIN", Icon = "folder-tree", Collapsible = true })
 
 -- 1. MAIN (Icon: Ngôi nhà)
-local TabMain = Window:Tab({ Title = "Main", Icon = "house" })
+local TabMain = Window:Tab({ Title = "Main", Icon = "house", Parent = FolderMain })
 TabMain:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 2. STAMINA (Icon: Năng lượng)
-local TabStamina = Window:Tab({ Title = "Stamina", Icon = "zap" })
+local TabStamina = Window:Tab({ Title = "Stamina", Icon = "zap", Parent = FolderMain })
 TabStamina:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 3. SURVIVE (Icon: Hình người)
-local TabSurvive = Window:Tab({ Title = "Survive", Icon = "user" })
+local TabSurvive = Window:Tab({ Title = "Survive", Icon = "user", Parent = FolderMain })
 TabSurvive:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 4. KILLER (Icon: Đầu lâu)
-local TabKiller = Window:Tab({ Title = "Killer", Icon = "skull" })
+local TabKiller = Window:Tab({ Title = "Killer", Icon = "skull", Parent = FolderMain })
 TabKiller:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 5. GENERATOR (Icon: Bánh răng)
-local TabGenerator = Window:Tab({ Title = "Generator", Icon = "settings" })
+local TabGenerator = Window:Tab({ Title = "Generator", Icon = "settings", Parent = FolderMain })
 TabGenerator:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 6. VISUAL (Icon: Con mắt)
-local TabVisual = Window:Tab({ Title = "Visual", Icon = "eye" })
+local TabVisual = Window:Tab({ Title = "Visual", Icon = "eye", Parent = FolderMain })
 TabVisual:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 7. AIMBOT (Icon: Ống nhắm)
-local TabAimbot = Window:Tab({ Title = "Aimbot", Icon = "crosshair" })
+local TabAimbot = Window:Tab({ Title = "Aimbot", Icon = "crosshair", Parent = FolderMain })
 TabAimbot:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 8. SETTING (Icon: Bánh răng khác)
-local TabSetting = Window:Tab({ Title = "Setting", Icon = "settings-2" })
+local TabSetting = Window:Tab({ Title = "Setting", Icon = "settings-2", Parent = FolderMain })
 TabSetting:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
