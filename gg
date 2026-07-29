@@ -28,9 +28,13 @@ Window:EditOpenButton({
 -------------------------------------------------------------------------
 
 -- ======================================================================
--- ĐẦU MỤC: HOME
+-- ĐẦU MỤC: HOME (Tạo thành Tab phân cách thư mục để chắc chắn hiển thị)
 -- ======================================================================
-Window:Divider({ Title = "HOME" })
+local FolderHome = Window:Tab({ Title = "--- HOME ---", Icon = "folder" })
+FolderHome:Paragraph({
+    Title = "Thư Mục HOME",
+    Desc = "Đây là mục phân loại, các tab bên dưới thuộc về nhóm HOME."
+})
 
 -- INFORMATION (Icon: info)
 local TabInformation = Window:Tab({ Title = "Information", Icon = "info" })
@@ -40,9 +44,13 @@ TabInformation:Paragraph({
 })
 
 -- ======================================================================
--- ĐẦU MỤC: MAIN
+-- ĐẦU MỤC: MAIN (Tạo thành Tab phân cách thư mục để chắc chắn hiển thị)
 -- ======================================================================
-Window:Divider({ Title = "MAIN" })
+local FolderMain = Window:Tab({ Title = "--- MAIN ---", Icon = "folder" })
+FolderMain:Paragraph({
+    Title = "Thư Mục MAIN",
+    Desc = "Đây là mục phân loại, các tab bên dưới thuộc về nhóm MAIN."
+})
 
 -- 1. MAIN (Icon: Ngôi nhà)
 local TabMain = Window:Tab({ Title = "Main", Icon = "house" })
