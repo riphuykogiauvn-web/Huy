@@ -27,6 +27,21 @@ Window:EditOpenButton({
 -- TẠO CÁC TAB & CHUẨN BỊ GIAO DIỆN "ĐANG UPDATE"
 -------------------------------------------------------------------------
 
+-- ======================================================================
+-- ĐẦU MỤC: HOME
+-- ======================================================================
+
+-- INFORMATION (Icon: Bảng cảnh báo)
+local TabInformation = Window:Tab({ Title = "Information", Icon = "alert-triangle" })
+TabInformation:Paragraph({
+    Title = "Thông Báo",
+    Desc = "Chức năng đang được Update..."
+})
+
+-- ======================================================================
+-- ĐẦU MỤC: MAIN
+-- ======================================================================
+
 -- 1. MAIN (Icon: Ngôi nhà)
 local TabMain = Window:Tab({ Title = "Main", Icon = "house" })
 TabMain:Paragraph({
@@ -65,6 +80,20 @@ TabGenerator:Paragraph({
 -- 6. VISUAL (Icon: Con mắt)
 local TabVisual = Window:Tab({ Title = "Visual", Icon = "eye" })
 TabVisual:Paragraph({
+    Title = "Thông Báo",
+    Desc = "Chức năng đang được Update..."
+})
+
+-- 7. AIMBOT (Icon: Ống nhắm)
+local TabAimbot = Window:Tab({ Title = "Aimbot", Icon = "crosshair" })
+TabAimbot:Paragraph({
+    Title = "Thông Báo",
+    Desc = "Chức năng đang được Update..."
+})
+
+-- 8. SETTING (Icon: Bánh răng khác)
+local TabSetting = Window:Tab({ Title = "Setting", Icon = "settings-2" })
+TabSetting:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
