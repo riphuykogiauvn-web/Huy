@@ -30,9 +30,10 @@ Window:EditOpenButton({
 -- ======================================================================
 -- ĐẦU MỤC: HOME
 -- ======================================================================
+Window:Divider({ Title = "HOME" })
 
--- INFORMATION (Icon: Bảng cảnh báo)
-local TabInformation = Window:Tab({ Title = "Information", Icon = "alert-triangle" })
+-- INFORMATION (Icon: info)
+local TabInformation = Window:Tab({ Title = "Information", Icon = "info" })
 TabInformation:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
@@ -41,6 +42,7 @@ TabInformation:Paragraph({
 -- ======================================================================
 -- ĐẦU MỤC: MAIN
 -- ======================================================================
+Window:Divider({ Title = "MAIN" })
 
 -- 1. MAIN (Icon: Ngôi nhà)
 local TabMain = Window:Tab({ Title = "Main", Icon = "house" })
