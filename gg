@@ -28,73 +28,140 @@ Window:EditOpenButton({
 -------------------------------------------------------------------------
 
 -- ======================================================================
--- ĐẦU MỤC: HOME (Thử nghiệm ép tạo thư mục xổ xuống bằng trick Collapsible)
+-- ĐẦU MỤC: HOME
 -- ======================================================================
-local FolderHome = Window:Tab({ Title = "HOME", Icon = "folder-tree", Collapsible = true })
+Window:Divider({ Title = "HOME" })
 
 -- INFORMATION (Icon: info)
-local TabInformation = Window:Tab({ Title = "Information", Icon = "info", Parent = FolderHome })
+local TabInformation = Window:Tab({ Title = "Information", Icon = "info" })
+
+-- 1. THÔNG TIN TÁC GIẢ
+TabInformation:Section({ Title = "Thông Tin Chung" })
 TabInformation:Paragraph({
-    Title = "Thông Báo",
-    Desc = "Chức năng đang được Update..."
+    Title = "Tác Giả & Phiên Bản",
+    Desc = "Tác giả: HUYKOGIAUVN\nPhiên bản: 1.0\n\nCẢM ƠN MỌI NGƯỜI ĐÃ DÙNG SCRIPT ^-^"
+})
+
+-- 2. NHẬT KÝ CẬP NHẬT (Changelog)
+TabInformation:Section({ Title = "Nhật Ký Cập Nhật (Update Log)" })
+TabInformation:Paragraph({
+    Title = "[Phiên bản 1.0] - Ngày 29/07/2026",
+    Desc = "- Khởi tạo thành công khung giao diện AMETHYST HUB.\n- Tích hợp thư viện WindUI siêu mượt.\n- Hỗ trợ tương thích hoàn toàn cho Delta X."
+})
+
+-- 3. MẠNG XÃ HỘI & DISCORD (Có đếm member)
+TabInformation:Section({ Title = "Cộng Đồng (Discord)" })
+
+-- Code lấy dữ liệu API từ mã mời Discord
+local inviteCode = "TXws5EF4C"
+local memberCount = "Đang tải..."
+local onlineCount = "Đang tải..."
+
+pcall(function()
+    local HttpService = game:GetService("HttpService")
+    local req = game:HttpGet("https://discord.com/api/v9/invites/" .. inviteCode .. "?with_counts=true")
+    local decoded = HttpService:JSONDecode(req)
+    if decoded and decoded.approximate_member_count then
+        memberCount = tostring(decoded.approximate_member_count)
+        onlineCount = tostring(decoded.approximate_presence_count)
+    end
+end)
+
+TabInformation:Paragraph({
+    Title = "Thống Kê Server AMETHYST HUB",
+    Desc = "Tổng thành viên: " .. memberCount .. "\nĐang hoạt động (Online): " .. onlineCount
+})
+
+TabInformation:Button({
+    Title = "Tham gia Discord Server",
+    Desc = "Nhấn vào đây để Copy Link",
+    Callback = function()
+        if setclipboard then
+            setclipboard("https://discord.gg/TXws5EF4C")
+            WindUI:Notify({
+                Title = "Thành Công",
+                Content = "Đã copy link Discord vào khay nhớ tạm!",
+                Duration = 3,
+                Icon = "check"
+            })
+        end
+    end
+})
+
+-- 4. THÔNG TIN NGƯỜI CHƠI & EXECUTOR
+TabInformation:Section({ Title = "Thông Số Của Bạn" })
+local executorName = identifyexecutor and identifyexecutor() or "Không xác định"
+local playerName = game.Players.LocalPlayer.Name
+local displayName = game.Players.LocalPlayer.DisplayName
+
+TabInformation:Paragraph({
+    Title = "Dữ Liệu Người Dùng",
+    Desc = "Tên hiển thị: " .. displayName .. "\nTên tài khoản (User): " .. playerName .. "\nPhần mềm chạy (Executor): " .. executorName
+})
+
+-- 5. LỜI KHUYÊN / CẢNH BÁO
+TabInformation:Section({ Title = "Cảnh Báo An Toàn" })
+TabInformation:Paragraph({
+    Title = "Chú ý khi dùng Script!",
+    Desc = "1. Khuyến cáo nên dùng tài khoản phụ (Clone) để test trước khi dùng ở acc chính.\n2. Lạm dụng tính năng Auto quá đà có thể khiến game bị lỗi văng hoặc bị hệ thống game phát hiện (Ban).\n3. Hãy bật chức năng ở mức độ vừa phải để có trải nghiệm an toàn nhất!"
 })
 
 -- ======================================================================
--- ĐẦU MỤC: MAIN (Thử nghiệm ép tạo thư mục xổ xuống bằng trick Collapsible)
+-- ĐẦU MỤC: MAIN
 -- ======================================================================
-local FolderMain = Window:Tab({ Title = "MAIN", Icon = "folder-tree", Collapsible = true })
+Window:Divider({ Title = "MAIN" })
 
 -- 1. MAIN (Icon: Ngôi nhà)
-local TabMain = Window:Tab({ Title = "Main", Icon = "house", Parent = FolderMain })
+local TabMain = Window:Tab({ Title = "Main", Icon = "house" })
 TabMain:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 2. STAMINA (Icon: Năng lượng)
-local TabStamina = Window:Tab({ Title = "Stamina", Icon = "zap", Parent = FolderMain })
+local TabStamina = Window:Tab({ Title = "Stamina", Icon = "zap" })
 TabStamina:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 3. SURVIVE (Icon: Hình người)
-local TabSurvive = Window:Tab({ Title = "Survive", Icon = "user", Parent = FolderMain })
+local TabSurvive = Window:Tab({ Title = "Survive", Icon = "user" })
 TabSurvive:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 4. KILLER (Icon: Đầu lâu)
-local TabKiller = Window:Tab({ Title = "Killer", Icon = "skull", Parent = FolderMain })
+local TabKiller = Window:Tab({ Title = "Killer", Icon = "skull" })
 TabKiller:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 5. GENERATOR (Icon: Bánh răng)
-local TabGenerator = Window:Tab({ Title = "Generator", Icon = "settings", Parent = FolderMain })
+local TabGenerator = Window:Tab({ Title = "Generator", Icon = "settings" })
 TabGenerator:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 6. VISUAL (Icon: Con mắt)
-local TabVisual = Window:Tab({ Title = "Visual", Icon = "eye", Parent = FolderMain })
+local TabVisual = Window:Tab({ Title = "Visual", Icon = "eye" })
 TabVisual:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 7. AIMBOT (Icon: Ống nhắm)
-local TabAimbot = Window:Tab({ Title = "Aimbot", Icon = "crosshair", Parent = FolderMain })
+local TabAimbot = Window:Tab({ Title = "Aimbot", Icon = "crosshair" })
 TabAimbot:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
 })
 
 -- 8. SETTING (Icon: Bánh răng khác)
-local TabSetting = Window:Tab({ Title = "Setting", Icon = "settings-2", Parent = FolderMain })
+local TabSetting = Window:Tab({ Title = "Setting", Icon = "settings-2" })
 TabSetting:Paragraph({
     Title = "Thông Báo",
     Desc = "Chức năng đang được Update..."
