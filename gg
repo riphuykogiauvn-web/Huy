@@ -163,7 +163,7 @@ TabInformation:Paragraph({
 TabInformation:Section({ Title = "Nhật Ký Cập Nhật (Update Log)" })
 TabInformation:Paragraph({
     Title = "[Phiên bản 1.0] - Cập nhật mới",
-    Desc = "- Khởi tạo thành công khung giao diện AMETHYST HUB.\n- Thêm ESP Player, Items, PizzaDeliveryRig.\n- FIX LAG TRIỆT ĐỂ: Dùng Event thay thế vòng lặp cho phần quét.\n- FIX HIỂN THỊ HP: Máu cập nhật chuẩn xác theo thời gian thực.\n- Thêm mục AZURE (GroundBulbModel, VineModel).\n- FIX NHẬN NHẦM: 007N7 ESP bỏ qua người thật, tự xóa khi Clone chết.\n- CẬP NHẬT MỚI (VII TAPH): Thêm ESP cho SubspaceTripmine và TaphTripwire.\n- CẬP NHẬT GIAO DIỆN (HOT): Đã fix lỗi giấu UI của executor, ép load ảnh nền thành công bằng phương thức rbxthumb Bypass.\n- FIX ÁNH SÁNG UI (CHUẨN): Đã chọc thẳng vào nhân (Background) của WindUI để tẩy trong suốt lớp nền đen của Theme Dark. Giờ Waifu đã nổi bật 100%!\n- FIX VĨNH VIỄN LỖI ẢNH TỐI: Gắn thêm Event siêu mượt để chống lại việc thư viện WindUI tự động reset lớp màu nền đen mỗi khi đóng/mở menu.\n- AUTO SAVE TỐI THƯỢNG: Hệ thống quét lõi siêu ngầm, tự động lưu lại toàn bộ các nút ESP và Theme vào máy, 0% lag, vào lại game vẫn y nguyên.\n- CẬP NHẬT MỚI (III PizzaDeliveryRig): Gộp thêm 4 Bot MAFIA (MAFIA1, MAFIA2, MAFIA3, MAFIA4) vào tính năng ESP, tự động nhận diện và hiển thị chính xác tên gốc của từng Bot trên định vị.\n- CẬP NHẬT MỚI (STAMINA): Đã trích xuất và lắp ráp thành công tính năng Bất tử thể lực (Infinity Stamina) vào Tab Stamina và hỗ trợ tùy chỉnh tối đa 10.000.\n- CẬP NHẬT MỚI (SURVIVE): Thêm chức năng CHANCE nhận diện súng Flintlock trên tay để Auto Aimbot Pizza Guy. BẢN CẬP NHẬT EVENT KÉP CHỐNG LAG TỐI THƯỢNG: ÁP DỤNG BỘ NHỚ ĐỆM CHO CẢ PIZZA GUY VÀ FLINTLOCK.\n- CẬP NHẬT MỚI (SURVIVE): Thêm chức năng SHEDLETSKY nhận diện kiếm Sword trên tay để Auto Aimbot Pizza Guy (40 Studs).\n- CẬP NHẬT MỚI (SURVIVE - JANE DOE): Đã thay thế hoàn toàn hệ thống Aimbot của Jane Doe. Nâng cấp thành Event Kép chống lag 0% giống Chance. Hỗ trợ tự động ngắm khi rút BACKAXE (40m) và rút CRYSTAL (150m)."
+    Desc = "- Khởi tạo thành công khung giao diện AMETHYST HUB.\n- Thêm ESP Player, Items, PizzaDeliveryRig.\n- FIX LAG TRIỆT ĐỂ: Dùng Event thay thế vòng lặp cho phần quét.\n- FIX HIỂN THỊ HP: Máu cập nhật chuẩn xác theo thời gian thực.\n- Thêm mục AZURE (GroundBulbModel, VineModel).\n- FIX NHẬN NHẦM: 007N7 ESP bỏ qua người thật, tự xóa khi Clone chết.\n- CẬP NHẬT MỚI (VII TAPH): Thêm ESP cho SubspaceTripmine và TaphTripwire.\n- CẬP NHẬT GIAO DIỆN (HOT): Đã fix lỗi giấu UI của executor, ép load ảnh nền thành công bằng phương thức rbxthumb Bypass.\n- FIX ÁNH SÁNG UI (CHUẨN): Đã chọc thẳng vào nhân (Background) của WindUI để tẩy trong suốt lớp nền đen của Theme Dark. Giờ Waifu đã nổi bật 100%!\n- FIX VĨNH VIỄN LỖI ẢNH TỐI: Gắn thêm Event siêu mượt để chống lại việc thư viện WindUI tự động reset lớp màu nền đen mỗi khi đóng/mở menu.\n- AUTO SAVE TỐI THƯỢNG: Hệ thống quét lõi siêu ngầm, tự động lưu lại toàn bộ các nút ESP và Theme vào máy, 0% lag, vào lại game vẫn y nguyên.\n- CẬP NHẬT MỚI (III PizzaDeliveryRig): Gộp thêm 4 Bot MAFIA (MAFIA1, MAFIA2, MAFIA3, MAFIA4) vào tính năng ESP, tự động nhận diện và hiển thị chính xác tên gốc của từng Bot trên định vị.\n- CẬP NHẬT MỚI (STAMINA): Đã trích xuất và lắp ráp thành công tính năng Bất tử thể lực (Infinity Stamina) vào Tab Stamina và hỗ trợ tùy chỉnh tối đa 10.000.\n- CẬP NHẬT MỚI (SURVIVE): Thêm chức năng CHANCE nhận diện súng Flintlock trên tay để Auto Aimbot Pizza Guy. BẢN CẬP NHẬT EVENT KÉP CHỐNG LAG TỐI THƯỢNG: ÁP DỤNG BỘ NHỚ ĐỆM CHO CẢ PIZZA GUY VÀ FLINTLOCK.\n- CẬP NHẬT MỚI (SURVIVE): Thêm chức năng SHEDLETSKY nhận diện kiếm Sword trên tay để Auto Aimbot Pizza Guy (40 Studs).\n- CẬP NHẬT MỚI (SURVIVE - JANE DOE): Tích hợp trực tiếp công nghệ VIP Camera, BodyGyro và Raycast chống tường của bản V27. Gắn thẳng vào hệ thống trang bị Backaxe (40m) và Crystal (150m) theo chuẩn chống lag tuyệt đối."
 })
 
 -- 3. MẠNG XÃ HỘI & DISCORD (Có đếm member)
@@ -641,20 +641,19 @@ TabSurvive:Toggle({
 TabSurvive:Section({ Title = "III JANE DOE" })
 
 TabSurvive:Toggle({
-    Title = "Aimbot Pizza Guy (Backaxe)",
-    Desc = "Auto Aimbot NPC Pizza Guy khi cầm Backaxe (40 Studs) | HỆ THỐNG EVENT KÉP CHỐNG LAG",
+    Title = "Aimbot Pizza Guy (Hatchet - Backaxe)",
+    Desc = "Aimbot NPC Pizza Guy khi rút Backaxe (40 Studs) | BODYGYRO VIP",
     Default = false,
     Callback = function(State)
         getgenv().Amethyst_AxeAimbot = State
         
         if State then
             local LocalPlayer = game.Players.LocalPlayer
+            local RunService = game:GetService("RunService")
             
-            -- [HỆ THỐNG BỘ NHỚ ĐỆM KÉP: PIZZA GUY VÀ BACKAXE]
             getgenv().Amethyst_JaneDoe_Axe_PizzaList = {}
             getgenv().Amethyst_CachedAxe = nil
             
-            -- Hàm nạp Pizza Guy
             local function checkAndAddPizzaGuyAxe(obj)
                 if obj:IsA("Model") then
                     local lowerName = string.lower(obj.Name)
@@ -664,40 +663,27 @@ TabSurvive:Toggle({
                 end
             end
             
-            -- Hàm nạp Backaxe
+            -- FIX THEO LỆNH SẾP: ĐỔI TÊN THÀNH BACKAXE
             local function checkAndCacheAxe(obj)
                 if string.match(string.lower(obj.Name), "backaxe") then
                     getgenv().Amethyst_CachedAxe = obj
                 end
             end
             
-            -- Quét 1 lần duy nhất để tìm các con Pizza Guy đang có sẵn
-            for _, obj in pairs(workspace:GetDescendants()) do
-                checkAndAddPizzaGuyAxe(obj)
-            end
-            
-            -- Quét 1 lần duy nhất tìm backaxe trên người nếu đã cầm sẵn
+            for _, obj in pairs(workspace:GetDescendants()) do checkAndAddPizzaGuyAxe(obj) end
             if LocalPlayer.Character then
-                for _, obj in pairs(LocalPlayer.Character:GetDescendants()) do
-                    checkAndCacheAxe(obj)
-                end
+                for _, obj in pairs(LocalPlayer.Character:GetDescendants()) do checkAndCacheAxe(obj) end
             end
             
-            -- Canh chừng Event 1: Spawn Pizza Guy
             getgenv().Amethyst_AxeAimbotConn = workspace.DescendantAdded:Connect(function(obj)
                 task.wait(0.5) 
-                if getgenv().Amethyst_AxeAimbot then
-                    checkAndAddPizzaGuyAxe(obj)
-                end
+                if getgenv().Amethyst_AxeAimbot then checkAndAddPizzaGuyAxe(obj) end
             end)
             
-            -- Canh chừng Event 2: Móc Backaxe vào Character
             local function hookCharAxe(char)
                 if getgenv().Amethyst_AxeDescendantConn then getgenv().Amethyst_AxeDescendantConn:Disconnect() end
                 getgenv().Amethyst_AxeDescendantConn = char.DescendantAdded:Connect(function(obj)
-                    if getgenv().Amethyst_AxeAimbot then
-                        checkAndCacheAxe(obj)
-                    end
+                    if getgenv().Amethyst_AxeAimbot then checkAndCacheAxe(obj) end
                 end)
             end
             
@@ -705,110 +691,126 @@ TabSurvive:Toggle({
             getgenv().Amethyst_AxeCharAddedConn = LocalPlayer.CharacterAdded:Connect(function(char)
                 task.wait(0.5)
                 if getgenv().Amethyst_AxeAimbot then
-                    -- Quét lại backaxe phòng trường hợp respawn có sẵn
                     for _, obj in pairs(char:GetDescendants()) do checkAndCacheAxe(obj) end
                     hookCharAxe(char)
                 end
             end)
 
-            -- [VÒNG LẶP AIMBOT SIÊU NHẸ]
-            task.spawn(function()
-                while getgenv().Amethyst_AxeAimbot do
-                    task.wait()
-                    pcall(function()
-                        local char = LocalPlayer.Character
-                        if not char then return end
-                        local hrp = char:FindFirstChild("HumanoidRootPart")
-                        local humanoid = char:FindFirstChild("Humanoid")
-                        if not hrp or not humanoid then return end
+            -- Sử dụng RenderStepped để BodyGyro hoạt động cực mượt theo mã gốc V27
+            RunService:BindToRenderStep("Amethyst_Backaxe_Aimbot", 200, function()
+                if not getgenv().Amethyst_AxeAimbot then return end
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    if not char then return end
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    local humanoid = char:FindFirstChild("Humanoid")
+                    if not hrp or not humanoid then return end
+                    
+                    local hasAxe = false
+                    local axe = getgenv().Amethyst_CachedAxe
+                    
+                    if axe and axe.Parent and axe:IsDescendantOf(char) then
+                        if axe:IsA("Tool") then
+                            hasAxe = true
+                        elseif axe:IsA("Model") or axe:IsA("BasePart") then
+                            local isVisible = false
+                            if axe:IsA("BasePart") and axe.Transparency < 1 then isVisible = true end
+                            for _, part in pairs(axe:GetDescendants()) do
+                                if (part:IsA("BasePart") or part:IsA("MeshPart")) and part.Transparency < 1 then
+                                    isVisible = true
+                                    break
+                                end
+                            end
+                            if isVisible then hasAxe = true end
+                        end
+                    end
+                    
+                    if hasAxe then
+                        local closestDist = 40 
+                        local targetPart = nil
                         
-                        local hasAxe = false
-                        local axe = getgenv().Amethyst_CachedAxe
-                        
-                        if axe and axe.Parent and axe:IsDescendantOf(char) then
-                            if axe:IsA("Tool") then
-                                hasAxe = true
-                            elseif axe:IsA("Model") or axe:IsA("BasePart") then
-                                local isVisible = false
-                                if axe:IsA("BasePart") and axe.Transparency < 1 then isVisible = true end
-                                for _, part in pairs(axe:GetDescendants()) do
-                                    if (part:IsA("BasePart") or part:IsA("MeshPart")) and part.Transparency < 1 then
-                                        isVisible = true
-                                        break
+                        for i = #getgenv().Amethyst_JaneDoe_Axe_PizzaList, 1, -1 do
+                            local obj = getgenv().Amethyst_JaneDoe_Axe_PizzaList[i]
+                            if not obj or not obj.Parent then
+                                table.remove(getgenv().Amethyst_JaneDoe_Axe_PizzaList, i)
+                            else
+                                local tHrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj.PrimaryPart
+                                if tHrp then
+                                    local dist = (hrp.Position - tHrp.Position).Magnitude
+                                    if dist <= closestDist then
+                                        closestDist = dist
+                                        targetPart = tHrp
                                     end
                                 end
-                                if isVisible then hasAxe = true end
                             end
                         end
                         
-                        if hasAxe then
+                        if targetPart then
+                            -- ÁP DỤNG TRỰC TIẾP MÃ TỪ JANE DOE V27: BODYGYRO BẺ CỔ
                             humanoid.AutoRotate = false
-                            local closestDist = 40 -- Tầm ngắm Rìu 40 Studs
-                            local targetPart = nil
-                            
-                            for i = #getgenv().Amethyst_JaneDoe_Axe_PizzaList, 1, -1 do
-                                local obj = getgenv().Amethyst_JaneDoe_Axe_PizzaList[i]
-                                
-                                if not obj or not obj.Parent then
-                                    table.remove(getgenv().Amethyst_JaneDoe_Axe_PizzaList, i)
-                                else
-                                    local tHrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj.PrimaryPart
-                                    if tHrp then
-                                        local dist = (hrp.Position - tHrp.Position).Magnitude
-                                        if dist <= closestDist then
-                                            closestDist = dist
-                                            targetPart = tHrp
-                                        end
-                                    end
-                                end
+                            local gyro = hrp:FindFirstChild("AmethystVIPGyro_Axe")
+                            if not gyro then
+                                gyro = Instance.new("BodyGyro")
+                                gyro.Name = "AmethystVIPGyro_Axe"
+                                gyro.MaxTorque = Vector3.new(0, 400000, 0)
+                                gyro.D = 50
+                                gyro.P = 50000
+                                gyro.Parent = hrp
                             end
-                            
-                            if targetPart then
-                                local lookPos = Vector3.new(targetPart.Position.X, hrp.Position.Y, targetPart.Position.Z)
-                                hrp.CFrame = hrp.CFrame:Lerp(CFrame.lookAt(hrp.Position, lookPos), 0.6)
-                            end
+                            local tPos = targetPart.Position
+                            gyro.CFrame = CFrame.lookAt(hrp.Position, Vector3.new(tPos.X, hrp.Position.Y, tPos.Z))
                         else
-                            -- Trả lại tự do nếu không có Aimbot nào khác đang kích hoạt
+                            local gyro = hrp:FindFirstChild("AmethystVIPGyro_Axe")
+                            if gyro then gyro:Destroy() end
                             if not getgenv().Amethyst_ChanceAimbot and not getgenv().Amethyst_ShedletskyAimbot and not getgenv().Amethyst_CrystalAimbot then
                                 humanoid.AutoRotate = true
                             end
                         end
-                    end)
-                end
-                
-                pcall(function()
-                    if not getgenv().Amethyst_ChanceAimbot and not getgenv().Amethyst_ShedletskyAimbot and not getgenv().Amethyst_CrystalAimbot then
-                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                            LocalPlayer.Character.Humanoid.AutoRotate = true
+                    else
+                        local gyro = hrp:FindFirstChild("AmethystVIPGyro_Axe")
+                        if gyro then gyro:Destroy() end
+                        if not getgenv().Amethyst_ChanceAimbot and not getgenv().Amethyst_ShedletskyAimbot and not getgenv().Amethyst_CrystalAimbot then
+                            humanoid.AutoRotate = true
                         end
                     end
                 end)
             end)
         else
+            local RunService = game:GetService("RunService")
+            RunService:UnbindFromRenderStep("Amethyst_Backaxe_Aimbot")
             if getgenv().Amethyst_AxeAimbotConn then getgenv().Amethyst_AxeAimbotConn:Disconnect() getgenv().Amethyst_AxeAimbotConn = nil end
             if getgenv().Amethyst_AxeDescendantConn then getgenv().Amethyst_AxeDescendantConn:Disconnect() getgenv().Amethyst_AxeDescendantConn = nil end
             if getgenv().Amethyst_AxeCharAddedConn then getgenv().Amethyst_AxeCharAddedConn:Disconnect() getgenv().Amethyst_AxeCharAddedConn = nil end
             getgenv().Amethyst_JaneDoe_Axe_PizzaList = nil
             getgenv().Amethyst_CachedAxe = nil
+            
+            pcall(function()
+                local LocalPlayer = game.Players.LocalPlayer
+                if LocalPlayer.Character then
+                    local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp and hrp:FindFirstChild("AmethystVIPGyro_Axe") then
+                        hrp.AmethystVIPGyro_Axe:Destroy()
+                    end
+                end
+            end)
         end
     end
 })
 
 TabSurvive:Toggle({
     Title = "Aimbot Pizza Guy (Crystal Pitch)",
-    Desc = "Auto Aimbot NPC Pizza Guy khi cầm Crystal (150 Studs) | HỆ THỐNG EVENT KÉP",
+    Desc = "Aimbot NPC Pizza Guy khi rút Crystal (150 Studs) | SHIFTLOCK VIP CAMERA V27",
     Default = false,
     Callback = function(State)
         getgenv().Amethyst_CrystalAimbot = State
         
         if State then
             local LocalPlayer = game.Players.LocalPlayer
+            local RunService = game:GetService("RunService")
             
-            -- [HỆ THỐNG BỘ NHỚ ĐỆM KÉP: PIZZA GUY VÀ CRYSTAL]
             getgenv().Amethyst_JaneDoe_Crystal_PizzaList = {}
             getgenv().Amethyst_CachedCrystal = nil
             
-            -- Hàm nạp Pizza Guy
             local function checkAndAddPizzaGuyCrystal(obj)
                 if obj:IsA("Model") then
                     local lowerName = string.lower(obj.Name)
@@ -818,40 +820,26 @@ TabSurvive:Toggle({
                 end
             end
             
-            -- Hàm nạp Crystal
             local function checkAndCacheCrystal(obj)
                 if string.match(string.lower(obj.Name), "crystal") then
                     getgenv().Amethyst_CachedCrystal = obj
                 end
             end
             
-            -- Quét 1 lần duy nhất để tìm các con Pizza Guy đang có sẵn
-            for _, obj in pairs(workspace:GetDescendants()) do
-                checkAndAddPizzaGuyCrystal(obj)
-            end
-            
-            -- Quét 1 lần duy nhất tìm crystal trên người nếu đã cầm sẵn
+            for _, obj in pairs(workspace:GetDescendants()) do checkAndAddPizzaGuyCrystal(obj) end
             if LocalPlayer.Character then
-                for _, obj in pairs(LocalPlayer.Character:GetDescendants()) do
-                    checkAndCacheCrystal(obj)
-                end
+                for _, obj in pairs(LocalPlayer.Character:GetDescendants()) do checkAndCacheCrystal(obj) end
             end
             
-            -- Canh chừng Event 1: Spawn Pizza Guy
             getgenv().Amethyst_CrystalAimbotConn = workspace.DescendantAdded:Connect(function(obj)
                 task.wait(0.5) 
-                if getgenv().Amethyst_CrystalAimbot then
-                    checkAndAddPizzaGuyCrystal(obj)
-                end
+                if getgenv().Amethyst_CrystalAimbot then checkAndAddPizzaGuyCrystal(obj) end
             end)
             
-            -- Canh chừng Event 2: Móc Crystal vào Character
             local function hookCharCrystal(char)
                 if getgenv().Amethyst_CrystalDescendantConn then getgenv().Amethyst_CrystalDescendantConn:Disconnect() end
                 getgenv().Amethyst_CrystalDescendantConn = char.DescendantAdded:Connect(function(obj)
-                    if getgenv().Amethyst_CrystalAimbot then
-                        checkAndCacheCrystal(obj)
-                    end
+                    if getgenv().Amethyst_CrystalAimbot then checkAndCacheCrystal(obj) end
                 end)
             end
             
@@ -859,91 +847,150 @@ TabSurvive:Toggle({
             getgenv().Amethyst_CrystalCharAddedConn = LocalPlayer.CharacterAdded:Connect(function(char)
                 task.wait(0.5)
                 if getgenv().Amethyst_CrystalAimbot then
-                    -- Quét lại crystal phòng trường hợp respawn có sẵn
                     for _, obj in pairs(char:GetDescendants()) do checkAndCacheCrystal(obj) end
                     hookCharCrystal(char)
                 end
             end)
 
-            -- [VÒNG LẶP AIMBOT SIÊU NHẸ]
-            task.spawn(function()
-                while getgenv().Amethyst_CrystalAimbot do
-                    task.wait()
-                    pcall(function()
-                        local char = LocalPlayer.Character
-                        if not char then return end
-                        local hrp = char:FindFirstChild("HumanoidRootPart")
-                        local humanoid = char:FindFirstChild("Humanoid")
-                        if not hrp or not humanoid then return end
-                        
-                        local hasCrystal = false
-                        local crystal = getgenv().Amethyst_CachedCrystal
-                        
-                        if crystal and crystal.Parent and crystal:IsDescendantOf(char) then
-                            if crystal:IsA("Tool") then
-                                hasCrystal = true
-                            elseif crystal:IsA("Model") or crystal:IsA("BasePart") then
-                                local isVisible = false
-                                if crystal:IsA("BasePart") and crystal.Transparency < 1 then isVisible = true end
-                                for _, part in pairs(crystal:GetDescendants()) do
-                                    if (part:IsA("BasePart") or part:IsA("MeshPart")) and part.Transparency < 1 then
-                                        isVisible = true
-                                        break
-                                    end
-                                end
-                                if isVisible then hasCrystal = true end
+            -- BÊ NGUYÊN CODE TỪ V27: KÍCH HOẠT CAMERA VIP ĐỘC LẬP
+            RunService:BindToRenderStep("Amethyst_Crystal_VIPCamera", 201, function()
+                if not getgenv().Amethyst_CrystalAimbot then return end
+                
+                local char = LocalPlayer.Character
+                local cam = workspace.CurrentCamera
+                local root = char and char:FindFirstChild("HumanoidRootPart")
+                local hum = char and char:FindFirstChild("Humanoid")
+                
+                if not char or not root or not hum or not cam then return end
+                
+                local hasCrystal = false
+                local crystal = getgenv().Amethyst_CachedCrystal
+                
+                if crystal and crystal.Parent and crystal:IsDescendantOf(char) then
+                    if crystal:IsA("Tool") then
+                        hasCrystal = true
+                    elseif crystal:IsA("Model") or crystal:IsA("BasePart") then
+                        local isVisible = false
+                        if crystal:IsA("BasePart") and crystal.Transparency < 1 then isVisible = true end
+                        for _, part in pairs(crystal:GetDescendants()) do
+                            if (part:IsA("BasePart") or part:IsA("MeshPart")) and part.Transparency < 1 then
+                                isVisible = true
+                                break
                             end
                         end
-                        
-                        if hasCrystal then
-                            humanoid.AutoRotate = false
-                            local closestDist = 150 -- Tầm ngắm Ném lọ 150 Studs
-                            local targetPart = nil
-                            
-                            for i = #getgenv().Amethyst_JaneDoe_Crystal_PizzaList, 1, -1 do
-                                local obj = getgenv().Amethyst_JaneDoe_Crystal_PizzaList[i]
-                                
-                                if not obj or not obj.Parent then
-                                    table.remove(getgenv().Amethyst_JaneDoe_Crystal_PizzaList, i)
-                                else
-                                    local tHrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj.PrimaryPart
-                                    if tHrp then
-                                        local dist = (hrp.Position - tHrp.Position).Magnitude
-                                        if dist <= closestDist then
-                                            closestDist = dist
-                                            targetPart = tHrp
-                                        end
-                                    end
-                                end
-                            end
-                            
-                            if targetPart then
-                                local lookPos = Vector3.new(targetPart.Position.X, hrp.Position.Y, targetPart.Position.Z)
-                                hrp.CFrame = hrp.CFrame:Lerp(CFrame.lookAt(hrp.Position, lookPos), 0.6)
-                            end
-                        else
-                            -- Trả lại tự do nếu không có Aimbot nào khác đang kích hoạt
-                            if not getgenv().Amethyst_ChanceAimbot and not getgenv().Amethyst_ShedletskyAimbot and not getgenv().Amethyst_AxeAimbot then
-                                humanoid.AutoRotate = true
-                            end
-                        end
-                    end)
+                        if isVisible then hasCrystal = true end
+                    end
                 end
                 
-                pcall(function()
-                    if not getgenv().Amethyst_ChanceAimbot and not getgenv().Amethyst_ShedletskyAimbot and not getgenv().Amethyst_AxeAimbot then
-                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                            LocalPlayer.Character.Humanoid.AutoRotate = true
+                if hasCrystal then
+                    local closestDist = 150
+                    local targetPart = nil
+                    
+                    for i = #getgenv().Amethyst_JaneDoe_Crystal_PizzaList, 1, -1 do
+                        local obj = getgenv().Amethyst_JaneDoe_Crystal_PizzaList[i]
+                        if not obj or not obj.Parent then
+                            table.remove(getgenv().Amethyst_JaneDoe_Crystal_PizzaList, i)
+                        else
+                            local tHrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj.PrimaryPart
+                            if tHrp then
+                                local dist = (root.Position - tHrp.Position).Magnitude
+                                if dist <= closestDist then
+                                    closestDist = dist
+                                    targetPart = tHrp
+                                end
+                            end
                         end
                     end
-                end)
+                    
+                    if targetPart then
+                        -- TÍCH HỢP CODE VIP CAMERA TỪ V27
+                        local VIPOffset = Vector3.new(0, 5.141, 10.148)
+                        local PredictionTime = 0.08
+                        
+                        cam.CameraType = Enum.CameraType.Scriptable
+                        cam.FieldOfView = 70
+                        
+                        local targetPos = targetPart.Position
+                        local headPos = root.Position + Vector3.new(0, 1.5, 0)
+                        
+                        local lookCFrame = CFrame.lookAt(headPos, targetPos)
+                        local desiredCamCFrame = lookCFrame * CFrame.new(VIPOffset)
+                        
+                        local rayOrigin = headPos
+                        local rayDirection = desiredCamCFrame.Position - headPos
+                        local raycastParams = RaycastParams.new()
+                        raycastParams.FilterDescendantsInstances = {char, targetPart, targetPart.Parent}
+                        raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+                        raycastParams.IgnoreWater = true
+                        
+                        local result = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+                        local finalCamPos = result and (result.Position + (result.Normal * 0.5)) or desiredCamCFrame.Position
+                        cam.CFrame = CFrame.lookAt(finalCamPos, targetPos)
+                        
+                        hum.AutoRotate = false
+                        local gyro = root:FindFirstChild("AmethystVIPGyro_Crystal")
+                        if not gyro then
+                            gyro = Instance.new("BodyGyro")
+                            gyro.Name = "AmethystVIPGyro_Crystal"
+                            gyro.MaxTorque = Vector3.new(0, 400000, 0)
+                            gyro.D = 50
+                            gyro.P = 50000
+                            gyro.Parent = root
+                        end
+                        gyro.CFrame = CFrame.lookAt(root.Position, Vector3.new(targetPos.X, root.Position.Y, targetPos.Z))
+                        
+                        local aimPos = targetPos + (targetPart.Velocity * PredictionTime)
+                        local ingameFolder = workspace:FindFirstChild("Ingame")
+                        local endPoint = ingameFolder and ingameFolder:FindFirstChild("EndPoint")
+                        if endPoint and endPoint:IsA("BasePart") then
+                            endPoint.CFrame = CFrame.new(aimPos)
+                        end
+                    else
+                        -- Có bình nhưng không có mục tiêu -> Nhả Camera
+                        if cam.CameraType == Enum.CameraType.Scriptable then
+                            cam.CameraType = Enum.CameraType.Custom
+                            cam.CameraSubject = hum
+                        end
+                        if not getgenv().Amethyst_ChanceAimbot and not getgenv().Amethyst_ShedletskyAimbot and not getgenv().Amethyst_AxeAimbot then
+                            hum.AutoRotate = true
+                        end
+                        local gyro = root:FindFirstChild("AmethystVIPGyro_Crystal")
+                        if gyro then gyro:Destroy() end
+                    end
+                else
+                    -- Không cầm bình -> Nhả Camera
+                    if cam.CameraType == Enum.CameraType.Scriptable then
+                        cam.CameraType = Enum.CameraType.Custom
+                        cam.CameraSubject = hum
+                    end
+                    if not getgenv().Amethyst_ChanceAimbot and not getgenv().Amethyst_ShedletskyAimbot and not getgenv().Amethyst_AxeAimbot then
+                        hum.AutoRotate = true
+                    end
+                    local gyro = root:FindFirstChild("AmethystVIPGyro_Crystal")
+                    if gyro then gyro:Destroy() end
+                end
             end)
         else
+            local RunService = game:GetService("RunService")
+            RunService:UnbindFromRenderStep("Amethyst_Crystal_VIPCamera")
             if getgenv().Amethyst_CrystalAimbotConn then getgenv().Amethyst_CrystalAimbotConn:Disconnect() getgenv().Amethyst_CrystalAimbotConn = nil end
             if getgenv().Amethyst_CrystalDescendantConn then getgenv().Amethyst_CrystalDescendantConn:Disconnect() getgenv().Amethyst_CrystalDescendantConn = nil end
             if getgenv().Amethyst_CrystalCharAddedConn then getgenv().Amethyst_CrystalCharAddedConn:Disconnect() getgenv().Amethyst_CrystalCharAddedConn = nil end
             getgenv().Amethyst_JaneDoe_Crystal_PizzaList = nil
             getgenv().Amethyst_CachedCrystal = nil
+            
+            pcall(function()
+                local LocalPlayer = game.Players.LocalPlayer
+                workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+                if LocalPlayer.Character then
+                    local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
+                    if hum then workspace.CurrentCamera.CameraSubject = hum end
+                    local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if root and root:FindFirstChild("AmethystVIPGyro_Crystal") then
+                        root.AmethystVIPGyro_Crystal:Destroy()
+                    end
+                end
+            end)
         end
     end
 })
