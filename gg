@@ -9,7 +9,7 @@ local Window = WindUI:CreateWindow({
     Folder = "AmethystHub_Config", 
     Size = UDim2.fromOffset(600, 450), 
     Transparent = true, 
-    Theme = "Dark", 
+    Theme = "Midnight", 
     SideBarWidth = 180,
     HasOutline = true
 })
@@ -23,8 +23,125 @@ Window:EditOpenButton({
     StrokeColor = Color3.fromRGB(138, 43, 226) 
 })
 
+-- ==========================================
+-- HỆ THỐNG GẮN ẢNH NỀN (BACKGROUND) CHO MENU (Bypass gethui & Decal ID)
+-- ==========================================
+task.spawn(function()
+    task.wait(2.5) -- Đợi UI load hoàn toàn 100% và chạy xong animation
+    pcall(function()
+        -- BÍ QUYẾT: Dùng gethui() để xuyên qua lớp bảo vệ của Executor (Delta, ArceusX, CodeX...)
+        local guiHoster = (gethui and gethui()) or game:GetService("CoreGui")
+        
+        for _, screen in pairs(guiHoster:GetChildren()) do
+            if screen:IsA("ScreenGui") then
+                for _, frame in pairs(screen:GetDescendants()) do
+                    -- Quét Frame to nhất có kích thước chuẩn của WindUI (600x450)
+                    if (frame:IsA("Frame") or frame:IsA("CanvasGroup")) and frame.Size.X.Offset == 600 and frame.Size.Y.Offset == 450 then
+                        if not frame:FindFirstChild("Amethyst_BG") then
+                            
+                            -- FIX LỖI ẢNH TỐI MỜ CHUẨN XÁC: Đánh bay lớp kính nền đen mặc định của thư viện WindUI
+                            local defaultBg = frame:FindFirstChild("Background")
+                            if defaultBg and defaultBg:IsA("ImageLabel") then
+                                defaultBg.ImageTransparency = 0.45 -- Ép lớp nền đen của Theme Dark mờ đi 85% để khoe trọn Waifu
+                                
+                                -- FIX LỖI TỐI LẠI KHI MỞ MENU LẦN 2 (Chống Lag - Dùng Event):
+                                -- Bắt thóp hiệu ứng tắt/mở của WindUI, khóa vĩnh viễn không cho nó đen hơn 0.45
+                                defaultBg:GetPropertyChangedSignal("ImageTransparency"):Connect(function()
+                                    if defaultBg.ImageTransparency < 0.45 then
+                                        defaultBg.ImageTransparency = 0.45
+                                    end
+                                end)
+                            end
+                            
+                            local bg = Instance.new("ImageLabel")
+                            bg.Name = "Amethyst_BG"
+                            bg.Size = UDim2.new(1, 0, 1, 0)
+                            bg.Position = UDim2.new(0, 0, 0, 0)
+                            bg.BackgroundTransparency = 1
+                            
+                            -- Ép load ảnh bằng định dạng siêu cấp rbxthumb để bypass lỗi Decal ID
+                            bg.Image = "rbxthumb://type=Asset&id=123903292773405&w=420&h=420"
+                            
+                            -- Độ mờ ảnh 15%, kết hợp lớp nền trong suốt phía trên sẽ làm ảnh cực kỳ rực rỡ và sắc nét
+                            bg.ImageTransparency = 0.15 
+                            bg.ScaleType = Enum.ScaleType.Crop
+                            bg.ZIndex = 0 
+                            bg.Parent = frame
+                            
+                            local corner = Instance.new("UICorner")
+                            corner.CornerRadius = UDim.new(0, 10)
+                            corner.Parent = bg
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end)
+
 -------------------------------------------------------------------------
--- TẠO CÁC TAB & CHUẨN BỊ GIAO DIỆN "ĐANG UPDATE"
+-- HÀM HỖ TRỢ ESP (SIÊU NHẸ - TỐI ƯU FPS)
+-------------------------------------------------------------------------
+local function AddESP(Target, Name, HP, Color)
+    -- NÂNG CẤP: Cập nhật HP liên tục theo thời gian thực nếu ESP đã tồn tại
+    if Target:FindFirstChild("Amethyst_Billboard") then
+        local existingText = Target.Amethyst_Billboard:FindFirstChild("TextLabel")
+        if existingText then
+            local finalText = Name
+            if HP then finalText = finalText .. " | HP: " .. tostring(HP) end
+            existingText.Text = finalText
+        end
+    end
+
+    -- Tránh trùng lặp tạo mới Highlight/Aura nếu đã có
+    if Target:FindFirstChild("Amethyst_Highlight") then return end
+    
+    -- 1. Tạo Aura (Highlight)
+    local Highlight = Instance.new("Highlight")
+    Highlight.Name = "Amethyst_Highlight"
+    Highlight.Adornee = Target
+    Highlight.FillColor = Color
+    Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    Highlight.FillTransparency = 0.5
+    Highlight.OutlineTransparency = 0.2
+    Highlight.Parent = Target
+    
+    -- 2. Tạo Text hiển thị Tên + HP
+    local Billboard = Instance.new("BillboardGui")
+    Billboard.Name = "Amethyst_Billboard"
+    Billboard.Adornee = Target
+    Billboard.Size = UDim2.new(0, 150, 0, 40)
+    Billboard.StudsOffset = Vector3.new(0, 4, 0) -- Nổi lên trên đầu
+    Billboard.AlwaysOnTop = true
+    
+    local Text = Instance.new("TextLabel")
+    Text.Size = UDim2.new(1, 0, 1, 0)
+    Text.BackgroundTransparency = 1
+    
+    -- Gộp Tên và HP nếu có
+    local finalText = Name
+    if HP then finalText = finalText .. " | HP: " .. tostring(HP) end
+    
+    Text.Text = finalText
+    Text.TextColor3 = Color
+    Text.TextStrokeTransparency = 0 -- Viền đen để dễ đọc chữ
+    Text.TextScaled = false
+    Text.TextSize = 14
+    Text.Font = Enum.Font.SourceSansBold
+    Text.Parent = Billboard
+    
+    Billboard.Parent = Target
+end
+
+local function RemoveESP(Target)
+    if Target then
+        if Target:FindFirstChild("Amethyst_Highlight") then Target.Amethyst_Highlight:Destroy() end
+        if Target:FindFirstChild("Amethyst_Billboard") then Target.Amethyst_Billboard:Destroy() end
+    end
+end
+
+-------------------------------------------------------------------------
+-- TẠO CÁC TAB & GIAO DIỆN
 -------------------------------------------------------------------------
 
 -- ======================================================================
@@ -45,8 +162,8 @@ TabInformation:Paragraph({
 -- 2. NHẬT KÝ CẬP NHẬT (Changelog)
 TabInformation:Section({ Title = "Nhật Ký Cập Nhật (Update Log)" })
 TabInformation:Paragraph({
-    Title = "[Phiên bản 1.0] - Ngày 29/07/2026",
-    Desc = "- Khởi tạo thành công khung giao diện AMETHYST HUB.\n- Tích hợp thư viện WindUI siêu mượt.\n- Hỗ trợ tương thích hoàn toàn cho Delta X."
+    Title = "[Phiên bản 1.0] - Cập nhật mới",
+    Desc = "- Khởi tạo thành công khung giao diện AMETHYST HUB.\n- Thêm ESP Player, Items, PizzaDeliveryRig.\n- FIX LAG TRIỆT ĐỂ: Dùng Event thay thế vòng lặp cho phần quét.\n- FIX HIỂN THỊ HP: Máu cập nhật chuẩn xác theo thời gian thực.\n- Thêm mục AZURE (GroundBulbModel, VineModel).\n- FIX NHẬN NHẦM: 007N7 ESP bỏ qua người thật, tự xóa khi Clone chết.\n- CẬP NHẬT MỚI (VII TAPH): Thêm ESP cho SubspaceTripmine và TaphTripwire.\n- CẬP NHẬT GIAO DIỆN (HOT): Đã fix lỗi giấu UI của executor, ép load ảnh nền thành công bằng phương thức rbxthumb Bypass.\n- FIX ÁNH SÁNG UI (CHUẨN): Đã chọc thẳng vào nhân (Background) của WindUI để tẩy trong suốt lớp nền đen của Theme Dark. Giờ Waifu đã nổi bật 100%!\n- FIX VĨNH VIỄN LỖI ẢNH TỐI: Gắn thêm Event siêu mượt để chống lại việc thư viện WindUI tự động reset lớp màu nền đen mỗi khi đóng/mở menu.\n- AUTO SAVE TỐI THƯỢNG: Hệ thống quét lõi siêu ngầm, tự động lưu lại toàn bộ các nút ESP và Theme vào máy, 0% lag, vào lại game vẫn y nguyên.\n- CẬP NHẬT MỚI (III PizzaDeliveryRig): Gộp thêm 4 Bot MAFIA (MAFIA1, MAFIA2, MAFIA3, MAFIA4) vào tính năng ESP, tự động nhận diện và hiển thị chính xác tên gốc của từng Bot trên định vị.\n- CẬP NHẬT MỚI (STAMINA): Đã trích xuất và lắp ráp thành công tính năng Bất tử thể lực (Infinity Stamina) vào Tab Stamina và hỗ trợ tùy chỉnh tối đa 10.000.\n- CẬP NHẬT MỚI (SURVIVE): Thêm chức năng CHANCE nhận diện súng Flintlock trên tay để Auto Aimbot Pizza Guy. BẢN CẬP NHẬT EVENT KÉP CHỐNG LAG TỐI THƯỢNG: ÁP DỤNG BỘ NHỚ ĐỆM CHO CẢ PIZZA GUY VÀ FLINTLOCK.\n- CẬP NHẬT MỚI (SURVIVE): Thêm chức năng SHEDLETSKY nhận diện kiếm Sword trên tay để Auto Aimbot Pizza Guy (40 Studs)."
 })
 
 -- 3. MẠNG XÃ HỘI & DISCORD (Có đếm member)
@@ -120,16 +237,401 @@ TabMain:Paragraph({
 
 -- 2. STAMINA (Icon: Năng lượng)
 local TabStamina = Window:Tab({ Title = "Stamina", Icon = "zap" })
-TabStamina:Paragraph({
-    Title = "Thông Báo",
-    Desc = "Chức năng đang được Update..."
+
+TabStamina:Section({ Title = "I INFINITY STAMINA" })
+
+TabStamina:Toggle({
+    Title = "Bất tử thể lực (Gốc)",
+    Desc = "Bơm liên tục và giữ thể lực luôn ở mức 100",
+    Default = false,
+    Callback = function(State)
+        getgenv().InfStamina_Basic = State
+        if State then
+            task.spawn(function()
+                while getgenv().InfStamina_Basic do
+                    task.wait()
+                    pcall(function()
+                        require(game.ReplicatedStorage.Systems.Character.Game.Sprinting).Stamina = 100
+                    end)
+                end
+            end)
+        end
+    end
+})
+
+TabStamina:Section({ Title = "II INFINITY STAMINA CHỈNH" })
+
+getgenv().Amethyst_StaminaAmount = 100 -- Biến lưu trữ thể lực (Mặc định 100)
+
+TabStamina:Input({
+    Title = "Mức Thể Lực (Max 10000)",
+    Default = "100",
+    Placeholder = "Nhập số lượng...",
+    Numeric = true,
+    Finished = true,
+    Callback = function(Text)
+        local num = tonumber(Text)
+        if num then
+            -- Chốt chặn 10.000 để chống văng/lỗi game
+            if num > 10000 then num = 10000 end
+            getgenv().Amethyst_StaminaAmount = num
+            WindUI:Notify({
+                Title = "AMETHYST HUB",
+                Content = "Đã chỉnh mức Thể lực thành: " .. num,
+                Duration = 2,
+                Icon = "check"
+            })
+        end
+    end
+})
+
+TabStamina:Toggle({
+    Title = "Bơm Thể Lực (Tùy Chỉnh)",
+    Desc = "Bơm liên tục và giữ cứng ở mức thể lực đã gõ",
+    Default = false,
+    Callback = function(State)
+        getgenv().InfStamina_Custom = State
+        if State then
+            task.spawn(function()
+                while getgenv().InfStamina_Custom do
+                    task.wait()
+                    pcall(function()
+                        require(game.ReplicatedStorage.Systems.Character.Game.Sprinting).Stamina = getgenv().Amethyst_StaminaAmount
+                    end)
+                end
+            end)
+        end
+    end
 })
 
 -- 3. SURVIVE (Icon: Hình người)
 local TabSurvive = Window:Tab({ Title = "Survive", Icon = "user" })
-TabSurvive:Paragraph({
-    Title = "Thông Báo",
-    Desc = "Chức năng đang được Update..."
+
+TabSurvive:Section({ Title = "I CHANCE" })
+
+TabSurvive:Toggle({
+    Title = "Aimbot Pizza Guy (Flintlock)",
+    Desc = "Auto Aimbot NPC Pizza Guy (150 Studs) | HỆ THỐNG EVENT KÉP CHỐNG LAG TỐI ĐA",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_ChanceAimbot = State
+        
+        if State then
+            local LocalPlayer = game.Players.LocalPlayer
+            
+            -- [HỆ THỐNG BỘ NHỚ ĐỆM KÉP: PIZZA GUY VÀ SÚNG]
+            getgenv().Amethyst_PizzaGuyList = {}
+            getgenv().Amethyst_CachedFlintlock = nil
+            
+            -- Hàm nạp Pizza Guy
+            local function checkAndAddPizzaGuy(obj)
+                if obj:IsA("Model") then
+                    local lowerName = string.lower(obj.Name)
+                    if string.match(lowerName, "pizza guy") or string.match(lowerName, "pizzaguy") then
+                        table.insert(getgenv().Amethyst_PizzaGuyList, obj)
+                    end
+                end
+            end
+            
+            -- Hàm nạp Súng (Flintlock)
+            local function checkAndCacheGun(obj)
+                if string.match(string.lower(obj.Name), "flintlock") then
+                    getgenv().Amethyst_CachedFlintlock = obj
+                end
+            end
+            
+            -- Quét 1 lần duy nhất để tìm các con Pizza Guy đang có sẵn
+            for _, obj in pairs(workspace:GetDescendants()) do
+                checkAndAddPizzaGuy(obj)
+            end
+            
+            -- Quét 1 lần duy nhất tìm súng trên người nếu đã cầm sẵn
+            if LocalPlayer.Character then
+                for _, obj in pairs(LocalPlayer.Character:GetDescendants()) do
+                    checkAndCacheGun(obj)
+                end
+            end
+            
+            -- Canh chừng Event 1: Spawn Pizza Guy
+            getgenv().Amethyst_ChanceAimbotConn = workspace.DescendantAdded:Connect(function(obj)
+                task.wait(0.5) 
+                if getgenv().Amethyst_ChanceAimbot then
+                    checkAndAddPizzaGuy(obj)
+                end
+            end)
+            
+            -- Canh chừng Event 2: Móc súng vào Character (Chống lag tuyệt đối thay vì quét vòng lặp)
+            local function hookChar(char)
+                if getgenv().Amethyst_GunDescendantConn then getgenv().Amethyst_GunDescendantConn:Disconnect() end
+                getgenv().Amethyst_GunDescendantConn = char.DescendantAdded:Connect(function(obj)
+                    if getgenv().Amethyst_ChanceAimbot then
+                        checkAndCacheGun(obj)
+                    end
+                end)
+            end
+            
+            if LocalPlayer.Character then hookChar(LocalPlayer.Character) end
+            getgenv().Amethyst_CharAddedConn = LocalPlayer.CharacterAdded:Connect(function(char)
+                task.wait(0.5)
+                if getgenv().Amethyst_ChanceAimbot then
+                    -- Quét lại súng phòng trường hợp respawn có sẵn
+                    for _, obj in pairs(char:GetDescendants()) do checkAndCacheGun(obj) end
+                    hookChar(char)
+                end
+            end)
+
+            -- [VÒNG LẶP AIMBOT SIÊU NHẸ]
+            task.spawn(function()
+                while getgenv().Amethyst_ChanceAimbot do
+                    task.wait()
+                    pcall(function()
+                        local char = LocalPlayer.Character
+                        if not char then return end
+                        local hrp = char:FindFirstChild("HumanoidRootPart")
+                        local humanoid = char:FindFirstChild("Humanoid")
+                        if not hrp or not humanoid then return end
+                        
+                        -- Lấy súng từ Bộ nhớ đệm (0% LAG)
+                        local hasFlintlock = false
+                        local gun = getgenv().Amethyst_CachedFlintlock
+                        
+                        -- Kiểm tra súng có tồn tại và đang dính trên người không
+                        if gun and gun.Parent and gun:IsDescendantOf(char) then
+                            if gun:IsA("Tool") then
+                                hasFlintlock = true
+                            elseif gun:IsA("Model") or gun:IsA("BasePart") then
+                                local isVisible = false
+                                if gun:IsA("BasePart") and gun.Transparency < 1 then isVisible = true end
+                                for _, part in pairs(gun:GetDescendants()) do
+                                    if (part:IsA("BasePart") or part:IsA("MeshPart")) and part.Transparency < 1 then
+                                        isVisible = true
+                                        break
+                                    end
+                                end
+                                if isVisible then hasFlintlock = true end
+                            end
+                        end
+                        
+                        -- Nếu thỏa mãn điều kiện lôi súng ra
+                        if hasFlintlock then
+                            humanoid.AutoRotate = false -- Khóa xoay tự do để màn hình chốt mục tiêu
+                            
+                            local closestDist = 150 -- Tầm ngắm bắn 150 Studs
+                            local targetPart = nil
+                            
+                            -- TỐI ƯU SIÊU TỐC: Chỉ quét trong cái list PizzaGuy mình đã tóm
+                            for i = #getgenv().Amethyst_PizzaGuyList, 1, -1 do
+                                local obj = getgenv().Amethyst_PizzaGuyList[i]
+                                
+                                -- Tự dọn rác nếu con NPC chết hoặc biến mất
+                                if not obj or not obj.Parent then
+                                    table.remove(getgenv().Amethyst_PizzaGuyList, i)
+                                else
+                                    local tHrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj.PrimaryPart
+                                    if tHrp then
+                                        local dist = (hrp.Position - tHrp.Position).Magnitude
+                                        if dist <= closestDist then
+                                            closestDist = dist
+                                            targetPart = tHrp
+                                        end
+                                    end
+                                end
+                            end
+                            
+                            -- Nếu có Pizza Guy trong list và nằm trong tầm ngắm 150m
+                            if targetPart then
+                                local lookPos = Vector3.new(targetPart.Position.X, hrp.Position.Y, targetPart.Position.Z)
+                                -- LERP thần thánh giúp camera lia vào NPC mượt như lụa, chống giật khựng
+                                hrp.CFrame = hrp.CFrame:Lerp(CFrame.lookAt(hrp.Position, lookPos), 0.6)
+                            end
+                        else
+                            humanoid.AutoRotate = true -- Trả lại xoay tự do khi cất súng
+                        end
+                    end)
+                end
+                
+                -- Đảm bảo trả lại AutoRotate khi tắt chức năng
+                pcall(function()
+                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                        LocalPlayer.Character.Humanoid.AutoRotate = true
+                    end
+                end)
+            end)
+        else
+            -- KHI TẮT NÚT: Hủy toàn bộ Event và xóa danh sách đệm
+            if getgenv().Amethyst_ChanceAimbotConn then getgenv().Amethyst_ChanceAimbotConn:Disconnect() getgenv().Amethyst_ChanceAimbotConn = nil end
+            if getgenv().Amethyst_GunDescendantConn then getgenv().Amethyst_GunDescendantConn:Disconnect() getgenv().Amethyst_GunDescendantConn = nil end
+            if getgenv().Amethyst_CharAddedConn then getgenv().Amethyst_CharAddedConn:Disconnect() getgenv().Amethyst_CharAddedConn = nil end
+            getgenv().Amethyst_PizzaGuyList = nil
+            getgenv().Amethyst_CachedFlintlock = nil
+        end
+    end
+})
+
+TabSurvive:Section({ Title = "II SHEDLETSKY" })
+
+TabSurvive:Toggle({
+    Title = "Aimbot Pizza Guy (Sword)",
+    Desc = "Auto Aimbot NPC Pizza Guy (40 Studs) | HỆ THỐNG EVENT KÉP CHỐNG LAG TỐI ĐA",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_ShedletskyAimbot = State
+        
+        if State then
+            local LocalPlayer = game.Players.LocalPlayer
+            
+            -- [HỆ THỐNG BỘ NHỚ ĐỆM KÉP: PIZZA GUY VÀ KIẾM]
+            getgenv().Amethyst_Shedletsky_PizzaList = {}
+            getgenv().Amethyst_CachedSword = nil
+            
+            -- Hàm nạp Pizza Guy
+            local function checkAndAddPizzaGuyShed(obj)
+                if obj:IsA("Model") then
+                    local lowerName = string.lower(obj.Name)
+                    if string.match(lowerName, "pizza guy") or string.match(lowerName, "pizzaguy") then
+                        table.insert(getgenv().Amethyst_Shedletsky_PizzaList, obj)
+                    end
+                end
+            end
+            
+            -- Hàm nạp Kiếm (Sword)
+            local function checkAndCacheSword(obj)
+                if string.match(string.lower(obj.Name), "sword") then
+                    getgenv().Amethyst_CachedSword = obj
+                end
+            end
+            
+            -- Quét 1 lần duy nhất để tìm các con Pizza Guy đang có sẵn
+            for _, obj in pairs(workspace:GetDescendants()) do
+                checkAndAddPizzaGuyShed(obj)
+            end
+            
+            -- Quét 1 lần duy nhất tìm kiếm trên người nếu đã cầm sẵn
+            if LocalPlayer.Character then
+                for _, obj in pairs(LocalPlayer.Character:GetDescendants()) do
+                    checkAndCacheSword(obj)
+                end
+            end
+            
+            -- Canh chừng Event 1: Spawn Pizza Guy
+            getgenv().Amethyst_ShedletskyAimbotConn = workspace.DescendantAdded:Connect(function(obj)
+                task.wait(0.5) 
+                if getgenv().Amethyst_ShedletskyAimbot then
+                    checkAndAddPizzaGuyShed(obj)
+                end
+            end)
+            
+            -- Canh chừng Event 2: Móc kiếm vào Character (Chống lag tuyệt đối thay vì quét vòng lặp)
+            local function hookCharShed(char)
+                if getgenv().Amethyst_SwordDescendantConn then getgenv().Amethyst_SwordDescendantConn:Disconnect() end
+                getgenv().Amethyst_SwordDescendantConn = char.DescendantAdded:Connect(function(obj)
+                    if getgenv().Amethyst_ShedletskyAimbot then
+                        checkAndCacheSword(obj)
+                    end
+                end)
+            end
+            
+            if LocalPlayer.Character then hookCharShed(LocalPlayer.Character) end
+            getgenv().Amethyst_SwordCharAddedConn = LocalPlayer.CharacterAdded:Connect(function(char)
+                task.wait(0.5)
+                if getgenv().Amethyst_ShedletskyAimbot then
+                    -- Quét lại kiếm phòng trường hợp respawn có sẵn
+                    for _, obj in pairs(char:GetDescendants()) do checkAndCacheSword(obj) end
+                    hookCharShed(char)
+                end
+            end)
+
+            -- [VÒNG LẶP AIMBOT SIÊU NHẸ]
+            task.spawn(function()
+                while getgenv().Amethyst_ShedletskyAimbot do
+                    task.wait()
+                    pcall(function()
+                        local char = LocalPlayer.Character
+                        if not char then return end
+                        local hrp = char:FindFirstChild("HumanoidRootPart")
+                        local humanoid = char:FindFirstChild("Humanoid")
+                        if not hrp or not humanoid then return end
+                        
+                        -- Lấy kiếm từ Bộ nhớ đệm (0% LAG)
+                        local hasSword = false
+                        local sword = getgenv().Amethyst_CachedSword
+                        
+                        -- Kiểm tra kiếm có tồn tại và đang dính trên người không
+                        if sword and sword.Parent and sword:IsDescendantOf(char) then
+                            if sword:IsA("Tool") then
+                                hasSword = true
+                            elseif sword:IsA("Model") or sword:IsA("BasePart") then
+                                local isVisible = false
+                                if sword:IsA("BasePart") and sword.Transparency < 1 then isVisible = true end
+                                for _, part in pairs(sword:GetDescendants()) do
+                                    if (part:IsA("BasePart") or part:IsA("MeshPart")) and part.Transparency < 1 then
+                                        isVisible = true
+                                        break
+                                    end
+                                end
+                                if isVisible then hasSword = true end
+                            end
+                        end
+                        
+                        -- Nếu thỏa mãn điều kiện lôi kiếm ra
+                        if hasSword then
+                            humanoid.AutoRotate = false -- Khóa xoay tự do để màn hình chốt mục tiêu
+                            
+                            local closestDist = 40 -- Tầm ngắm 40 Studs
+                            local targetPart = nil
+                            
+                            -- TỐI ƯU SIÊU TỐC: Chỉ quét trong cái list PizzaGuy mình đã tóm
+                            for i = #getgenv().Amethyst_Shedletsky_PizzaList, 1, -1 do
+                                local obj = getgenv().Amethyst_Shedletsky_PizzaList[i]
+                                
+                                -- Tự dọn rác nếu con NPC chết hoặc biến mất
+                                if not obj or not obj.Parent then
+                                    table.remove(getgenv().Amethyst_Shedletsky_PizzaList, i)
+                                else
+                                    local tHrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj.PrimaryPart
+                                    if tHrp then
+                                        local dist = (hrp.Position - tHrp.Position).Magnitude
+                                        if dist <= closestDist then
+                                            closestDist = dist
+                                            targetPart = tHrp
+                                        end
+                                    end
+                                end
+                            end
+                            
+                            -- Nếu có Pizza Guy trong list và nằm trong tầm ngắm 40m
+                            if targetPart then
+                                local lookPos = Vector3.new(targetPart.Position.X, hrp.Position.Y, targetPart.Position.Z)
+                                -- LERP thần thánh giúp camera lia vào NPC mượt như lụa, chống giật khựng
+                                hrp.CFrame = hrp.CFrame:Lerp(CFrame.lookAt(hrp.Position, lookPos), 0.6)
+                            end
+                        else
+                            -- Nếu CHANCE không được bật thì mới trả lại tự do, tránh đá nhau
+                            if not getgenv().Amethyst_ChanceAimbot then
+                                humanoid.AutoRotate = true
+                            end
+                        end
+                    end)
+                end
+                
+                -- Đảm bảo trả lại AutoRotate khi tắt chức năng
+                pcall(function()
+                    if not getgenv().Amethyst_ChanceAimbot then
+                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                            LocalPlayer.Character.Humanoid.AutoRotate = true
+                        end
+                    end
+                end)
+            end)
+        else
+            -- KHI TẮT NÚT: Hủy toàn bộ Event và xóa danh sách đệm
+            if getgenv().Amethyst_ShedletskyAimbotConn then getgenv().Amethyst_ShedletskyAimbotConn:Disconnect() getgenv().Amethyst_ShedletskyAimbotConn = nil end
+            if getgenv().Amethyst_SwordDescendantConn then getgenv().Amethyst_SwordDescendantConn:Disconnect() getgenv().Amethyst_SwordDescendantConn = nil end
+            if getgenv().Amethyst_SwordCharAddedConn then getgenv().Amethyst_SwordCharAddedConn:Disconnect() getgenv().Amethyst_SwordCharAddedConn = nil end
+            getgenv().Amethyst_Shedletsky_PizzaList = nil
+            getgenv().Amethyst_CachedSword = nil
+        end
+    end
 })
 
 -- 4. KILLER (Icon: Đầu lâu)
@@ -148,9 +650,658 @@ TabGenerator:Paragraph({
 
 -- 6. VISUAL (Icon: Con mắt)
 local TabVisual = Window:Tab({ Title = "Visual", Icon = "eye" })
-TabVisual:Paragraph({
-    Title = "Thông Báo",
-    Desc = "Chức năng đang được Update..."
+
+-- ĐẮP CHỨC NĂNG VISUAL VÀO ĐÂY
+TabVisual:Section({ Title = "I PLAYER" })
+
+TabVisual:Toggle({
+    Title = "Survive ESP",
+    Desc = "Dò liên tục tự động, Aura xanh biển nhạt, Hiện Tên + HP",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_SurviveESP = State
+        if State then
+            task.spawn(function()
+                while getgenv().Amethyst_SurviveESP do
+                    for _, player in pairs(game.Players:GetPlayers()) do
+                        if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
+                            local hp = math.floor(player.Character.Humanoid.Health)
+                            local maxHp = player.Character.Humanoid.MaxHealth
+                            -- Lọc Survivor: Thường có MaxHealth <= 200 (Ở đây là 100)
+                            if maxHp <= 200 then
+                                -- Màu xanh biển nhạt (Light Blue)
+                                AddESP(player.Character, player.Name, hp, Color3.fromRGB(173, 216, 230))
+                            end
+                        end
+                    end
+                    task.wait(0.5) -- Dò mượt mỗi 0.5s để qua trận tự nhận diện
+                end
+            end)
+        else
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("Humanoid") then
+                    if player.Character.Humanoid.MaxHealth <= 200 then
+                        RemoveESP(player.Character)
+                    end
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Toggle({
+    Title = "Killer ESP",
+    Desc = "Dò liên tục tự động, Aura đỏ, Hiện Tên + HP",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_KillerESP = State
+        if State then
+            task.spawn(function()
+                while getgenv().Amethyst_KillerESP do
+                    for _, player in pairs(game.Players:GetPlayers()) do
+                        if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
+                            local hp = math.floor(player.Character.Humanoid.Health)
+                            local maxHp = player.Character.Humanoid.MaxHealth
+                            -- Lọc Killer: Thường có MaxHealth rất lớn (Ở đây là > 100k)
+                            if maxHp > 200 then
+                                -- Màu đỏ (Red)
+                                AddESP(player.Character, player.Name, hp, Color3.fromRGB(255, 0, 0))
+                            end
+                        end
+                    end
+                    task.wait(0.5) -- Dò mượt mỗi 0.5s để qua trận tự nhận diện
+                end
+            end)
+        else
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("Humanoid") then
+                    if player.Character.Humanoid.MaxHealth > 200 then
+                        RemoveESP(player.Character)
+                    end
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Section({ Title = "II ITEMS" })
+
+TabVisual:Toggle({
+    Title = "Bloxy Cola ESP",
+    Desc = "Chống Lag (Chỉ dò định dạng Tool/Item), Aura nâu, Hiện Tên",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_BloxyESP = State
+        
+        if State then
+            -- Quét 1 lần duy nhất lúc vừa bật để tìm các bình nước có sẵn
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Tool") then
+                    if string.match(string.lower(v.Name), "bloxy cola") or string.match(string.lower(v.Name), "cola") then
+                        AddESP(v, "Bloxy Cola", nil, Color3.fromRGB(139, 69, 19))
+                    end
+                end
+            end
+            
+            -- Lắng nghe sự kiện khi có vật phẩm mới (Tuyệt đối không gây lag)
+            getgenv().Amethyst_BloxyConn = workspace.DescendantAdded:Connect(function(v)
+                task.wait(0.1) -- Chờ vài mili-giây để vật phẩm load đầy đủ thông tin
+                if getgenv().Amethyst_BloxyESP then
+                    if v:IsA("Tool") then
+                        if string.match(string.lower(v.Name), "bloxy cola") or string.match(string.lower(v.Name), "cola") then
+                            AddESP(v, "Bloxy Cola", nil, Color3.fromRGB(139, 69, 19))
+                        end
+                    end
+                end
+            end)
+        else
+            -- Tắt lắng nghe sự kiện
+            if getgenv().Amethyst_BloxyConn then
+                getgenv().Amethyst_BloxyConn:Disconnect()
+                getgenv().Amethyst_BloxyConn = nil
+            end
+            
+            -- Xóa ESP cũ
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Tool") then
+                    if string.match(string.lower(v.Name), "bloxy cola") or string.match(string.lower(v.Name), "cola") then
+                        RemoveESP(v)
+                    end
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Toggle({
+    Title = "Medkit ESP",
+    Desc = "Chống Lag (Chỉ dò định dạng Tool/Item), Aura xanh lá, Hiện Tên",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_MedkitESP = State
+        
+        if State then
+            -- Quét 1 lần duy nhất lúc vừa bật
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Tool") then
+                    if string.match(string.lower(v.Name), "medkit") or string.match(string.lower(v.Name), "health") then
+                        AddESP(v, "Medkit", nil, Color3.fromRGB(50, 205, 50))
+                    end
+                end
+            end
+            
+            -- Lắng nghe sự kiện
+            getgenv().Amethyst_MedkitConn = workspace.DescendantAdded:Connect(function(v)
+                task.wait(0.1)
+                if getgenv().Amethyst_MedkitESP then
+                    if v:IsA("Tool") then
+                        if string.match(string.lower(v.Name), "medkit") or string.match(string.lower(v.Name), "health") then
+                            AddESP(v, "Medkit", nil, Color3.fromRGB(50, 205, 50))
+                        end
+                    end
+                end
+            end)
+        else
+            -- Tắt lắng nghe
+            if getgenv().Amethyst_MedkitConn then
+                getgenv().Amethyst_MedkitConn:Disconnect()
+                getgenv().Amethyst_MedkitConn = nil
+            end
+            
+            -- Xóa ESP
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Tool") then
+                    if string.match(string.lower(v.Name), "medkit") or string.match(string.lower(v.Name), "health") then
+                        RemoveESP(v)
+                    end
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Section({ Title = "III PizzaDeliveryRig" })
+
+TabVisual:Toggle({
+    Title = "PizzaDeliveryRig & MAFIA ESP",
+    Desc = "Chống Lag (Sử dụng Event), Aura Xanh lá, Hiện Tên (Pizza + Mafia 1-4)",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_PizzaESP = State
+        
+        -- Hàm xử lý gọn gàng: Quét cả Pizza lẫn MAFIA1-4, phát hiện con nào dán tên con đó
+        local function CheckAndAddPizzaMafia(v)
+            if v:IsA("Model") then
+                local lowerName = string.lower(v.Name)
+                if string.match(lowerName, "pizzadeliveryrig") then
+                    AddESP(v, "PizzaDeliveryRig", nil, Color3.fromRGB(0, 255, 0))
+                elseif string.match(lowerName, "mafia1") then
+                    AddESP(v, "MAFIA1", nil, Color3.fromRGB(0, 255, 0))
+                elseif string.match(lowerName, "mafia2") then
+                    AddESP(v, "MAFIA2", nil, Color3.fromRGB(0, 255, 0))
+                elseif string.match(lowerName, "mafia3") then
+                    AddESP(v, "MAFIA3", nil, Color3.fromRGB(0, 255, 0))
+                elseif string.match(lowerName, "mafia4") then
+                    AddESP(v, "MAFIA4", nil, Color3.fromRGB(0, 255, 0))
+                end
+            end
+        end
+        
+        if State then
+            -- Quét 1 lần duy nhất lúc vừa bật để tìm các Bot/Nhân bản có sẵn
+            for _, v in pairs(workspace:GetDescendants()) do
+                CheckAndAddPizzaMafia(v)
+            end
+            
+            -- Lắng nghe sự kiện khi có Bot mới xuất hiện (Tuyệt đối không gây lag)
+            getgenv().Amethyst_PizzaConn = workspace.DescendantAdded:Connect(function(v)
+                task.wait(2) -- CHỜ ĐÚNG 2 GIÂY SAU KHI XUẤT HIỆN MỚI GẮN ESP
+                if getgenv().Amethyst_PizzaESP then
+                    CheckAndAddPizzaMafia(v)
+                end
+            end)
+        else
+            -- Tắt lắng nghe sự kiện
+            if getgenv().Amethyst_PizzaConn then
+                getgenv().Amethyst_PizzaConn:Disconnect()
+                getgenv().Amethyst_PizzaConn = nil
+            end
+            
+            -- Xóa ESP cũ
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") then
+                    local lowerName = string.lower(v.Name)
+                    if string.match(lowerName, "pizzadeliveryrig") or string.match(lowerName, "mafia1") or string.match(lowerName, "mafia2") or string.match(lowerName, "mafia3") or string.match(lowerName, "mafia4") then
+                        RemoveESP(v)
+                    end
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Section({ Title = "IV AZURE" })
+
+TabVisual:Toggle({
+    Title = "GroundBulbModel ESP",
+    Desc = "Chống Lag (Event), Aura Tím, Đợi 0.5s gắn định vị",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_GroundBulbESP = State
+        
+        if State then
+            -- Quét 1 lần duy nhất lúc vừa bật
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") then
+                    if string.match(string.lower(v.Name), "groundbulbmodel") then
+                        AddESP(v, "GroundBulbModel", nil, Color3.fromRGB(138, 43, 226))
+                    end
+                end
+            end
+            
+            -- Lắng nghe sự kiện
+            getgenv().Amethyst_GroundBulbConn = workspace.DescendantAdded:Connect(function(v)
+                task.wait(0.5) -- CHỜ ĐÚNG 0.5 GIÂY SAU KHI XUẤT HIỆN
+                if getgenv().Amethyst_GroundBulbESP then
+                    if v:IsA("Model") then
+                        if string.match(string.lower(v.Name), "groundbulbmodel") then
+                            AddESP(v, "GroundBulbModel", nil, Color3.fromRGB(138, 43, 226))
+                        end
+                    end
+                end
+            end)
+        else
+            -- Tắt lắng nghe sự kiện
+            if getgenv().Amethyst_GroundBulbConn then
+                getgenv().Amethyst_GroundBulbConn:Disconnect()
+                getgenv().Amethyst_GroundBulbConn = nil
+            end
+            
+            -- Xóa ESP cũ
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") then
+                    if string.match(string.lower(v.Name), "groundbulbmodel") then
+                        RemoveESP(v)
+                    end
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Toggle({
+    Title = "VineModel ESP",
+    Desc = "Chống Lag (Event), Aura Tím, Đợi 0.5s gắn định vị",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_VineESP = State
+        
+        if State then
+            -- Quét 1 lần duy nhất lúc vừa bật
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") then
+                    if string.match(string.lower(v.Name), "vinemodel") then
+                        AddESP(v, "VineModel", nil, Color3.fromRGB(138, 43, 226))
+                    end
+                end
+            end
+            
+            -- Lắng nghe sự kiện
+            getgenv().Amethyst_VineConn = workspace.DescendantAdded:Connect(function(v)
+                task.wait(0.5)
+                if getgenv().Amethyst_VineESP then
+                    if v:IsA("Model") then
+                        if string.match(string.lower(v.Name), "vinemodel") then
+                            AddESP(v, "VineModel", nil, Color3.fromRGB(138, 43, 226))
+                        end
+                    end
+                end
+            end)
+        else
+            -- Tắt lắng nghe sự kiện
+            if getgenv().Amethyst_VineConn then
+                getgenv().Amethyst_VineConn:Disconnect()
+                getgenv().Amethyst_VineConn = nil
+            end
+            
+            -- Xóa ESP cũ
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") then
+                    if string.match(string.lower(v.Name), "vinemodel") then
+                        RemoveESP(v)
+                    end
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Section({ Title = "V BUILDERMAN" })
+
+TabVisual:Toggle({
+    Title = "BuildermanDispenser ESP",
+    Desc = "Chống Lag (Event), Sinh Vật, Xóa khi chết (Không hiện HP)",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_BuilderDispenserESP = State
+        
+        local function applyDispenserESP(v)
+            if v:IsA("Model") and string.match(string.lower(v.Name), "buildermandispenser") then
+                -- Ép thành chuẩn Sinh vật: Chỉ nhận Model thực sự chứa Humanoid (tự loại bỏ thư mục/model lồng nhau)
+                local humanoid = v:FindFirstChild("Humanoid")
+                if humanoid then
+                    if game.Players:GetPlayerFromCharacter(v) then return end
+                    
+                    local hp = nil -- XÓA HIỂN THỊ HP TRÊN ĐỊNH VỊ THEO LỆNH
+                    AddESP(v, "BuildermanDispenser", hp, Color3.fromRGB(0, 255, 0))
+                    
+                    -- Luồng theo dõi HP và xóa khi máu <= 0
+                    task.spawn(function()
+                        while getgenv().Amethyst_BuilderDispenserESP and v and v.Parent do
+                            if humanoid.Health <= 0 then
+                                RemoveESP(v)
+                                break
+                            end
+                            -- Liên tục update máu lên bảng (Đã đổi sang nil để ẩn HP)
+                            AddESP(v, "BuildermanDispenser", nil, Color3.fromRGB(0, 255, 0))
+                            task.wait(0.5)
+                        end
+                    end)
+                end
+            end
+        end
+
+        if State then
+            -- Quét 1 lần duy nhất lúc vừa bật
+            for _, v in pairs(workspace:GetDescendants()) do
+                applyDispenserESP(v)
+            end
+            
+            -- Lắng nghe sự kiện
+            getgenv().Amethyst_BuilderDispenserConn = workspace.DescendantAdded:Connect(function(v)
+                task.wait(0.5)
+                if getgenv().Amethyst_BuilderDispenserESP then
+                    applyDispenserESP(v)
+                end
+            end)
+        else
+            -- Tắt lắng nghe sự kiện
+            if getgenv().Amethyst_BuilderDispenserConn then
+                getgenv().Amethyst_BuilderDispenserConn:Disconnect()
+                getgenv().Amethyst_BuilderDispenserConn = nil
+            end
+            
+            -- Xóa ESP cũ
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") and string.match(string.lower(v.Name), "buildermandispenser") then
+                    RemoveESP(v)
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Toggle({
+    Title = "BuildermanSentry ESP",
+    Desc = "Chống Lag (Event), Sinh Vật, Xóa khi chết (Không hiện HP)",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_BuilderSentryESP = State
+        
+        local function applySentryESP(v)
+            if v:IsA("Model") and string.match(string.lower(v.Name), "buildermansentry") then
+                -- Ép thành chuẩn Sinh vật: Chỉ nhận Model thực sự chứa Humanoid (tự loại bỏ thư mục/model lồng nhau)
+                local humanoid = v:FindFirstChild("Humanoid")
+                if humanoid then
+                    if game.Players:GetPlayerFromCharacter(v) then return end
+                    
+                    local hp = nil -- XÓA HIỂN THỊ HP TRÊN ĐỊNH VỊ THEO LỆNH
+                    AddESP(v, "BuildermanSentry", hp, Color3.fromRGB(0, 255, 0))
+                    
+                    -- Luồng theo dõi HP và xóa khi máu <= 0
+                    task.spawn(function()
+                        while getgenv().Amethyst_BuilderSentryESP and v and v.Parent do
+                            if humanoid.Health <= 0 then
+                                RemoveESP(v)
+                                break
+                            end
+                            -- Liên tục update máu lên bảng (Đã đổi sang nil để ẩn HP)
+                            AddESP(v, "BuildermanSentry", nil, Color3.fromRGB(0, 255, 0))
+                            task.wait(0.5)
+                        end
+                    end)
+                end
+            end
+        end
+
+        if State then
+            -- Quét 1 lần duy nhất lúc vừa bật
+            for _, v in pairs(workspace:GetDescendants()) do
+                applySentryESP(v)
+            end
+            
+            -- Lắng nghe sự kiện
+            getgenv().Amethyst_BuilderSentryConn = workspace.DescendantAdded:Connect(function(v)
+                task.wait(0.5)
+                if getgenv().Amethyst_BuilderSentryESP then
+                    applySentryESP(v)
+                end
+            end)
+        else
+            -- Tắt lắng nghe sự kiện
+            if getgenv().Amethyst_BuilderSentryConn then
+                getgenv().Amethyst_BuilderSentryConn:Disconnect()
+                getgenv().Amethyst_BuilderSentryConn = nil
+            end
+            
+            -- Xóa ESP cũ
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") and string.match(string.lower(v.Name), "buildermansentry") then
+                    RemoveESP(v)
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Section({ Title = "VI 007N7" })
+
+TabVisual:Toggle({
+    Title = "CLONE 007N7 ESP",
+    Desc = "Chống Lag (Event), Bỏ qua Player, Xóa ESP khi chết",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_007N7ESP = State
+        
+        -- Hàm xử lý gắn ESP và theo dõi cái chết của Clone
+        local function apply007N7ESP(v)
+            if v:IsA("Model") and string.match(string.lower(v.Name), "007n7") then
+                -- Bỏ qua nếu đây là nhân vật của người chơi thật (Player)
+                if game.Players:GetPlayerFromCharacter(v) then return end
+                
+                AddESP(v, "007N7", nil, Color3.fromRGB(0, 255, 0))
+                
+                -- Tạo luồng chạy ngầm siêu nhẹ theo dõi lúc Clone chết để xóa ESP
+                task.spawn(function()
+                    local humanoid = v:FindFirstChild("Humanoid")
+                    while getgenv().Amethyst_007N7ESP and v and v.Parent do
+                        if humanoid and humanoid.Health <= 0 then
+                            RemoveESP(v)
+                            break
+                        end
+                        task.wait(0.5)
+                    end
+                end)
+            end
+        end
+
+        if State then
+            -- Quét 1 lần duy nhất lúc vừa bật
+            for _, v in pairs(workspace:GetDescendants()) do
+                apply007N7ESP(v)
+            end
+            
+            -- Lắng nghe sự kiện
+            getgenv().Amethyst_007N7Conn = workspace.DescendantAdded:Connect(function(v)
+                task.wait(0.5)
+                if getgenv().Amethyst_007N7ESP then
+                    apply007N7ESP(v)
+                end
+            end)
+        else
+            -- Tắt lắng nghe sự kiện
+            if getgenv().Amethyst_007N7Conn then
+                getgenv().Amethyst_007N7Conn:Disconnect()
+                getgenv().Amethyst_007N7Conn = nil
+            end
+            
+            -- Xóa ESP cũ
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") and string.match(string.lower(v.Name), "007n7") then
+                    RemoveESP(v)
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Section({ Title = "VII TAPH" })
+
+TabVisual:Toggle({
+    Title = "SubspaceTripmine ESP",
+    Desc = "Chống Lag (Event), Sinh Vật, Xóa khi chết (Không hiện HP)",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_SubspaceESP = State
+        
+        local function applySubspaceESP(v)
+            if v:IsA("Model") and string.match(string.lower(v.Name), "subspacetripmine") then
+                local humanoid = v:FindFirstChild("Humanoid")
+                if humanoid then
+                    if game.Players:GetPlayerFromCharacter(v) then return end
+                    
+                    -- Lấy phần thân tránh Aura bự
+                    local targetPart = v:FindFirstChild("HumanoidRootPart") or v:FindFirstChild("Torso") or v:FindFirstChild("MainPart") or v:FindFirstChild("Head")
+                    if not targetPart then
+                        for _, child in pairs(v:GetDescendants()) do
+                            if child:IsA("BasePart") and child.Transparency < 1 and child.Size.Magnitude < 30 then
+                                targetPart = child
+                                break
+                            end
+                        end
+                    end
+                    targetPart = targetPart or v
+                    
+                    AddESP(targetPart, "SubspaceTripmine", nil, Color3.fromRGB(0, 255, 0))
+                    
+                    task.spawn(function()
+                        while getgenv().Amethyst_SubspaceESP do
+                            local currentHum = v:FindFirstChild("Humanoid")
+                            if not v or not v.Parent or not v:IsDescendantOf(workspace) or not currentHum or currentHum.Health <= 0 then
+                                RemoveESP(targetPart)
+                                break
+                            end
+                            task.wait(0.5)
+                        end
+                    end)
+                end
+            end
+        end
+
+        if State then
+            for _, v in pairs(workspace:GetDescendants()) do
+                applySubspaceESP(v)
+            end
+            
+            getgenv().Amethyst_SubspaceConn = workspace.DescendantAdded:Connect(function(v)
+                task.wait(0.5)
+                if getgenv().Amethyst_SubspaceESP then
+                    applySubspaceESP(v)
+                end
+            end)
+        else
+            if getgenv().Amethyst_SubspaceConn then
+                getgenv().Amethyst_SubspaceConn:Disconnect()
+                getgenv().Amethyst_SubspaceConn = nil
+            end
+            
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") and string.match(string.lower(v.Name), "subspacetripmine") then
+                    RemoveESP(v)
+                    for _, child in pairs(v:GetDescendants()) do
+                        if child:IsA("BasePart") then
+                            RemoveESP(child)
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+TabVisual:Toggle({
+    Title = "TaphTripwire ESP",
+    Desc = "Chống Lag (Event), Bỏ qua Tên Người Chơi, Không hiện HP",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_TaphTripwireESP = State
+        
+        local function applyTaphESP(v)
+            -- Tìm model có chứa chữ taphtripwire (sẽ bắt được luôn cả các model có dính tên người chơi)
+            if v:IsA("Model") and string.match(string.lower(v.Name), "taphtripwire") then
+                local humanoid = v:FindFirstChild("Humanoid")
+                if humanoid then
+                    if game.Players:GetPlayerFromCharacter(v) then return end
+                    
+                    -- FIX LỖI TÊN NẰM Ở ĐẦU DÂY: Gắn trực tiếp vào Model (v) thay vì 1 Part lẻ để game tự động căn giữa bounding box của cái bẫy
+                    local targetPart = v
+                    
+                    -- CHỈ HIỂN THỊ CHỮ "TaphTripwire" GỌN GÀNG, BỎ QUA CÁI TÊN NGƯỜI CHƠI BỊ LỒNG VÀO
+                    AddESP(targetPart, "TaphTripwire", nil, Color3.fromRGB(0, 255, 0))
+                    
+                    task.spawn(function()
+                        while getgenv().Amethyst_TaphTripwireESP do
+                            local currentHum = v:FindFirstChild("Humanoid")
+                            if not v or not v.Parent or not v:IsDescendantOf(workspace) or not currentHum or currentHum.Health <= 0 then
+                                RemoveESP(targetPart)
+                                break
+                            end
+                            task.wait(0.5)
+                        end
+                    end)
+                end
+            end
+        end
+
+        if State then
+            for _, v in pairs(workspace:GetDescendants()) do
+                applyTaphESP(v)
+            end
+            
+            getgenv().Amethyst_TaphTripwireConn = workspace.DescendantAdded:Connect(function(v)
+                task.wait(0.5)
+                if getgenv().Amethyst_TaphTripwireESP then
+                    applyTaphESP(v)
+                end
+            end)
+        else
+            if getgenv().Amethyst_TaphTripwireConn then
+                getgenv().Amethyst_TaphTripwireConn:Disconnect()
+                getgenv().Amethyst_TaphTripwireConn = nil
+            end
+            
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") and string.match(string.lower(v.Name), "taphtripwire") then
+                    RemoveESP(v)
+                    for _, child in pairs(v:GetDescendants()) do
+                        if child:IsA("BasePart") then
+                            RemoveESP(child)
+                        end
+                    end
+                end
+            end
+        end
+    end
 })
 
 -- 7. AIMBOT (Icon: Ống nhắm)
@@ -162,10 +1313,92 @@ TabAimbot:Paragraph({
 
 -- 8. SETTING (Icon: Bánh răng khác)
 local TabSetting = Window:Tab({ Title = "Setting", Icon = "settings-2" })
-TabSetting:Paragraph({
-    Title = "Thông Báo",
-    Desc = "Chức năng đang được Update..."
+
+TabSetting:Section({ Title = "I THEME" })
+
+TabSetting:Dropdown({
+    Title = "Chọn Theme Giao Diện",
+    Desc = "Thay đổi màu sắc tổng thể của Menu",
+    Values = {
+        "Dark", "Light", "Rose", "Plant", "Red", "Indigo", "Sky", "Violet", 
+        "Emerald", "Midnight", "Crimson", "MonokaiPro", "CottonCandy", 
+        "Mellowsi", "Amber", "Rainbow"
+    },
+    Value = "Midnight",
+    Callback = function(ThemeName)
+        WindUI:SetTheme(ThemeName)
+    end
 })
+
+TabSetting:Section({ Title = "II AUTO SAVE" })
+
+local HttpService = game:GetService("HttpService")
+local SaveFileName = "AmethystHub_Config/SaveSettings.json"
+
+local function SaveAll()
+    pcall(function()
+        local data = {}
+        if Window and Window.AllElements then
+            for _, element in pairs(Window.AllElements) do
+                if element.Title then
+                    if element.__type == "Toggle" then
+                        data[element.Title] = element.Value
+                    elseif element.__type == "Dropdown" then
+                        data[element.Title] = element.Value
+                    end
+                end
+            end
+            if not isfolder("AmethystHub_Config") then
+                makefolder("AmethystHub_Config")
+            end
+            writefile(SaveFileName, HttpService:JSONEncode(data))
+        end
+    end)
+end
+
+local function LoadAll()
+    pcall(function()
+        if isfile and isfile(SaveFileName) then
+            local data = HttpService:JSONDecode(readfile(SaveFileName))
+            if Window and Window.AllElements then
+                for _, element in pairs(Window.AllElements) do
+                    if element.Title and data[element.Title] ~= nil then
+                        if element.__type == "Toggle" then
+                            element:Set(data[element.Title])
+                        elseif element.__type == "Dropdown" then
+                            element:Select(data[element.Title])
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+TabSetting:Toggle({
+    Title = "Auto Save Settings",
+    Desc = "Tự động lưu cấu hình (ESP, Theme...) mỗi 3 giây (NO LAG)",
+    Default = false,
+    Callback = function(State)
+        getgenv().Amethyst_AutoSave = State
+        if State then
+            task.spawn(function()
+                while getgenv().Amethyst_AutoSave do
+                    SaveAll()
+                    task.wait(3)
+                end
+            end)
+        else
+            SaveAll() -- Lưu lại trạng thái tắt một lần cuối
+        end
+    end
+})
+
+-- Khởi chạy LoadAll() một lần duy nhất khi load xong UI để tự động nạp Save cũ
+task.spawn(function()
+    task.wait(1.5) -- Đợi UI và các ESP load xong form cơ bản rồi mới nạp Save
+    LoadAll()
+end)
 
 -- Hiển thị thông báo góc màn hình khi load xong form
 WindUI:Notify({
