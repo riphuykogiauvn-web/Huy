@@ -163,7 +163,7 @@ TabInformation:Paragraph({
 TabInformation:Section({ Title = "Nhật Ký Cập Nhật (Update Log)" })
 TabInformation:Paragraph({
     Title = "[Phiên bản 1.0] - Cập nhật mới",
-    Desc = "- Khởi tạo thành công khung giao diện AMETHYST HUB.\n- Thêm ESP Player, Items, PizzaDeliveryRig.\n- FIX LAG TRIỆT ĐỂ: Dùng Event thay thế vòng lặp cho phần quét.\n- FIX HIỂN THỊ HP: Máu cập nhật chuẩn xác theo thời gian thực.\n- Thêm mục AZURE (GroundBulbModel, VineModel).\n- FIX NHẬN NHẦM: 007N7 ESP bỏ qua người thật, tự xóa khi Clone chết.\n- CẬP NHẬT MỚI (VII TAPH): Thêm ESP cho SubspaceTripmine và TaphTripwire.\n- CẬP NHẬT GIAO DIỆN (HOT): Đã fix lỗi giấu UI của executor, ép load ảnh nền thành công bằng phương thức rbxthumb Bypass.\n- FIX ÁNH SÁNG UI (CHUẨN): Đã chọc thẳng vào nhân (Background) của WindUI để tẩy trong suốt lớp nền đen của Theme Dark. Giờ Waifu đã nổi bật 100%!\n- FIX VĨNH VIỄN LỖI ẢNH TỐI: Gắn thêm Event siêu mượt để chống lại việc thư viện WindUI tự động reset lớp màu nền đen mỗi khi đóng/mở menu.\n- AUTO SAVE TỐI THƯỢNG: Hệ thống quét lõi siêu ngầm, tự động lưu lại toàn bộ các nút ESP và Theme vào máy, 0% lag, vào lại game vẫn y nguyên.\n- CẬP NHẬT MỚI (III PizzaDeliveryRig): Gộp thêm 4 Bot MAFIA (MAFIA1, MAFIA2, MAFIA3, MAFIA4) vào tính năng ESP, tự động nhận diện và hiển thị chính xác tên gốc của từng Bot trên định vị.\n- CẬP NHẬT MỚI (STAMINA): Đã trích xuất và lắp ráp thành công tính năng Bất tử thể lực (Infinity Stamina) vào Tab Stamina và hỗ trợ tùy chỉnh tối đa 10.000.\n- CẬP NHẬT MỚI (SURVIVE): Thêm chức năng CHANCE nhận diện súng Flintlock trên tay để Auto Aimbot Pizza Guy. BẢN CẬP NHẬT EVENT KÉP CHỐNG LAG TỐI THƯỢNG: ÁP DỤNG BỘ NHỚ ĐỆM CHO CẢ PIZZA GUY VÀ FLINTLOCK.\n- CẬP NHẬT MỚI (SURVIVE): Thêm chức năng SHEDLETSKY nhận diện kiếm Sword trên tay để Auto Aimbot Pizza Guy (40 Studs).\n- CẬP NHẬT MỚI (SURVIVE - JANE DOE): Đã thay thế hoàn toàn hệ thống Aimbot của Jane Doe. Nâng cấp thành Event Kép chống lag 0% giống Chance. Hỗ trợ tự động ngắm khi rút AXE (40m) và rút CRYSTAL (150m)."
+    Desc = "- Khởi tạo thành công khung giao diện AMETHYST HUB.\n- Thêm ESP Player, Items, PizzaDeliveryRig.\n- FIX LAG TRIỆT ĐỂ: Dùng Event thay thế vòng lặp cho phần quét.\n- FIX HIỂN THỊ HP: Máu cập nhật chuẩn xác theo thời gian thực.\n- Thêm mục AZURE (GroundBulbModel, VineModel).\n- FIX NHẬN NHẦM: 007N7 ESP bỏ qua người thật, tự xóa khi Clone chết.\n- CẬP NHẬT MỚI (VII TAPH): Thêm ESP cho SubspaceTripmine và TaphTripwire.\n- CẬP NHẬT GIAO DIỆN (HOT): Đã fix lỗi giấu UI của executor, ép load ảnh nền thành công bằng phương thức rbxthumb Bypass.\n- FIX ÁNH SÁNG UI (CHUẨN): Đã chọc thẳng vào nhân (Background) của WindUI để tẩy trong suốt lớp nền đen của Theme Dark. Giờ Waifu đã nổi bật 100%!\n- FIX VĨNH VIỄN LỖI ẢNH TỐI: Gắn thêm Event siêu mượt để chống lại việc thư viện WindUI tự động reset lớp màu nền đen mỗi khi đóng/mở menu.\n- AUTO SAVE TỐI THƯỢNG: Hệ thống quét lõi siêu ngầm, tự động lưu lại toàn bộ các nút ESP và Theme vào máy, 0% lag, vào lại game vẫn y nguyên.\n- CẬP NHẬT MỚI (III PizzaDeliveryRig): Gộp thêm 4 Bot MAFIA (MAFIA1, MAFIA2, MAFIA3, MAFIA4) vào tính năng ESP, tự động nhận diện và hiển thị chính xác tên gốc của từng Bot trên định vị.\n- CẬP NHẬT MỚI (STAMINA): Đã trích xuất và lắp ráp thành công tính năng Bất tử thể lực (Infinity Stamina) vào Tab Stamina và hỗ trợ tùy chỉnh tối đa 10.000.\n- CẬP NHẬT MỚI (SURVIVE): Thêm chức năng CHANCE nhận diện súng Flintlock trên tay để Auto Aimbot Pizza Guy. BẢN CẬP NHẬT EVENT KÉP CHỐNG LAG TỐI THƯỢNG: ÁP DỤNG BỘ NHỚ ĐỆM CHO CẢ PIZZA GUY VÀ FLINTLOCK.\n- CẬP NHẬT MỚI (SURVIVE): Thêm chức năng SHEDLETSKY nhận diện kiếm Sword trên tay để Auto Aimbot Pizza Guy (40 Studs).\n- CẬP NHẬT MỚI (SURVIVE - JANE DOE): Đã thay thế hoàn toàn hệ thống Aimbot của Jane Doe. Nâng cấp thành Event Kép chống lag 0% giống Chance. Hỗ trợ tự động ngắm khi rút BACKAXE (40m) và rút CRYSTAL (150m)."
 })
 
 -- 3. MẠNG XÃ HỘI & DISCORD (Có đếm member)
@@ -641,8 +641,8 @@ TabSurvive:Toggle({
 TabSurvive:Section({ Title = "III JANE DOE" })
 
 TabSurvive:Toggle({
-    Title = "Aimbot Pizza Guy (Hatchet)",
-    Desc = "Auto Aimbot NPC Pizza Guy khi cầm Axe (40 Studs) | HỆ THỐNG EVENT KÉP CHỐNG LAG",
+    Title = "Aimbot Pizza Guy (Backaxe)",
+    Desc = "Auto Aimbot NPC Pizza Guy khi cầm Backaxe (40 Studs) | HỆ THỐNG EVENT KÉP CHỐNG LAG",
     Default = false,
     Callback = function(State)
         getgenv().Amethyst_AxeAimbot = State
@@ -650,7 +650,7 @@ TabSurvive:Toggle({
         if State then
             local LocalPlayer = game.Players.LocalPlayer
             
-            -- [HỆ THỐNG BỘ NHỚ ĐỆM KÉP: PIZZA GUY VÀ AXE]
+            -- [HỆ THỐNG BỘ NHỚ ĐỆM KÉP: PIZZA GUY VÀ BACKAXE]
             getgenv().Amethyst_JaneDoe_Axe_PizzaList = {}
             getgenv().Amethyst_CachedAxe = nil
             
@@ -664,9 +664,9 @@ TabSurvive:Toggle({
                 end
             end
             
-            -- Hàm nạp Axe
+            -- Hàm nạp Backaxe
             local function checkAndCacheAxe(obj)
-                if string.match(string.lower(obj.Name), "axe") then
+                if string.match(string.lower(obj.Name), "backaxe") then
                     getgenv().Amethyst_CachedAxe = obj
                 end
             end
@@ -676,7 +676,7 @@ TabSurvive:Toggle({
                 checkAndAddPizzaGuyAxe(obj)
             end
             
-            -- Quét 1 lần duy nhất tìm axe trên người nếu đã cầm sẵn
+            -- Quét 1 lần duy nhất tìm backaxe trên người nếu đã cầm sẵn
             if LocalPlayer.Character then
                 for _, obj in pairs(LocalPlayer.Character:GetDescendants()) do
                     checkAndCacheAxe(obj)
@@ -691,7 +691,7 @@ TabSurvive:Toggle({
                 end
             end)
             
-            -- Canh chừng Event 2: Móc Axe vào Character
+            -- Canh chừng Event 2: Móc Backaxe vào Character
             local function hookCharAxe(char)
                 if getgenv().Amethyst_AxeDescendantConn then getgenv().Amethyst_AxeDescendantConn:Disconnect() end
                 getgenv().Amethyst_AxeDescendantConn = char.DescendantAdded:Connect(function(obj)
@@ -705,7 +705,7 @@ TabSurvive:Toggle({
             getgenv().Amethyst_AxeCharAddedConn = LocalPlayer.CharacterAdded:Connect(function(char)
                 task.wait(0.5)
                 if getgenv().Amethyst_AxeAimbot then
-                    -- Quét lại axe phòng trường hợp respawn có sẵn
+                    -- Quét lại backaxe phòng trường hợp respawn có sẵn
                     for _, obj in pairs(char:GetDescendants()) do checkAndCacheAxe(obj) end
                     hookCharAxe(char)
                 end
