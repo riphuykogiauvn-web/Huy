@@ -27,7 +27,7 @@ Window:EditOpenButton({
 -- HỆ THỐNG GẮN ẢNH NỀN (BACKGROUND) CHO MENU (Bypass gethui & Decal ID)
 -- ==========================================
 task.spawn(function()
-    task.wait(2.5) -- Đợi UI load hoàn toàn 100% và chạy xong animation
+    task.wait(3) -- Chờ UI load hoàn toàn 100%
     pcall(function()
         -- BÍ QUYẾT: Dùng gethui() để xuyên qua lớp bảo vệ của Executor (Delta, ArceusX, CodeX...)
         local guiHoster = (gethui and gethui()) or game:GetService("CoreGui")
@@ -35,13 +35,14 @@ task.spawn(function()
         for _, screen in pairs(guiHoster:GetChildren()) do
             if screen:IsA("ScreenGui") then
                 for _, frame in pairs(screen:GetDescendants()) do
-                    -- Quét Frame to nhất có kích thước chuẩn của WindUI (600x450)
-                    if (frame:IsA("Frame") or frame:IsA("CanvasGroup")) and frame.Size.X.Offset == 600 and frame.Size.Y.Offset == 450 then
-                        if not frame:FindFirstChild("Amethyst_BG") then
-                            
-                            -- FIX LỖI ẢNH TỐI MỜ CHUẨN XÁC: Đánh bay lớp kính nền đen mặc định của thư viện WindUI
-                            local defaultBg = frame:FindFirstChild("Background")
-                            if defaultBg and defaultBg:IsA("ImageLabel") then
+                    -- ĐÃ XÓA SẠCH ĐIỀU KIỆN KÍCH THƯỚC. CHỌC THẲNG VÀO LÕI CỦA WINDUI!
+                    if frame:IsA("Frame") or frame:IsA("CanvasGroup") then
+                        local defaultBg = frame:FindFirstChild("Background")
+                        -- Nếu nó có chứa Background chuẩn của WindUI thì chốt luôn khung này
+                        if defaultBg and defaultBg:IsA("ImageLabel") then
+                            if not frame:FindFirstChild("Amethyst_BG") then
+                                
+                                -- FIX LỖI ẢNH TỐI MỜ CHUẨN XÁC: Đánh bay lớp kính nền đen mặc định của thư viện WindUI
                                 defaultBg.ImageTransparency = 0.45 -- Ép lớp nền đen của Theme Dark mờ đi 85% để khoe trọn Waifu
                                 
                                 -- FIX LỖI TỐI LẠI KHI MỞ MENU LẦN 2 (Chống Lag - Dùng Event):
@@ -51,26 +52,26 @@ task.spawn(function()
                                         defaultBg.ImageTransparency = 0.45
                                     end
                                 end)
+                                
+                                local bg = Instance.new("ImageLabel")
+                                bg.Name = "Amethyst_BG"
+                                bg.Size = UDim2.new(1, 0, 1, 0)
+                                bg.Position = UDim2.new(0, 0, 0, 0)
+                                bg.BackgroundTransparency = 1
+                                
+                                -- Ép load ảnh bằng định dạng siêu cấp rbxthumb để bypass lỗi Decal ID
+                                bg.Image = "rbxthumb://type=Asset&id=123903292773405&w=420&h=420"
+                                
+                                -- Độ mờ ảnh 15%, kết hợp lớp nền trong suốt phía trên sẽ làm ảnh cực kỳ rực rỡ và sắc nét
+                                bg.ImageTransparency = 0.15 
+                                bg.ScaleType = Enum.ScaleType.Crop
+                                bg.ZIndex = defaultBg.ZIndex + 1 -- Gắn đè ngay phía trên lớp nền gốc
+                                bg.Parent = frame
+                                
+                                local corner = Instance.new("UICorner")
+                                corner.CornerRadius = UDim.new(0, 10)
+                                corner.Parent = bg
                             end
-                            
-                            local bg = Instance.new("ImageLabel")
-                            bg.Name = "Amethyst_BG"
-                            bg.Size = UDim2.new(1, 0, 1, 0)
-                            bg.Position = UDim2.new(0, 0, 0, 0)
-                            bg.BackgroundTransparency = 1
-                            
-                            -- Ép load ảnh bằng định dạng siêu cấp rbxthumb để bypass lỗi Decal ID
-                            bg.Image = "rbxthumb://type=Asset&id=123903292773405&w=420&h=420"
-                            
-                            -- Độ mờ ảnh 15%, kết hợp lớp nền trong suốt phía trên sẽ làm ảnh cực kỳ rực rỡ và sắc nét
-                            bg.ImageTransparency = 0.15 
-                            bg.ScaleType = Enum.ScaleType.Crop
-                            bg.ZIndex = 0 
-                            bg.Parent = frame
-                            
-                            local corner = Instance.new("UICorner")
-                            corner.CornerRadius = UDim.new(0, 10)
-                            corner.Parent = bg
                         end
                     end
                 end
@@ -1596,14 +1597,25 @@ TabVisual:Toggle({
                 if humanoid then
                     if game.Players:GetPlayerFromCharacter(v) then return end
                     
-                    -- FIX: Áp dụng ESP trực tiếp vào cả Model để hiện toàn phần
-                    AddESP(v, "SubspaceTripmine", nil, Color3.fromRGB(0, 255, 0))
+                    -- Lấy phần thân tránh Aura bự
+                    local targetPart = v:FindFirstChild("HumanoidRootPart") or v:FindFirstChild("Torso") or v:FindFirstChild("MainPart") or v:FindFirstChild("Head")
+                    if not targetPart then
+                        for _, child in pairs(v:GetDescendants()) do
+                            if child:IsA("BasePart") and child.Transparency < 1 and child.Size.Magnitude < 30 then
+                                targetPart = child
+                                break
+                            end
+                        end
+                    end
+                    targetPart = targetPart or v
+                    
+                    AddESP(targetPart, "SubspaceTripmine", nil, Color3.fromRGB(0, 255, 0))
                     
                     task.spawn(function()
                         while getgenv().Amethyst_SubspaceESP do
                             local currentHum = v:FindFirstChild("Humanoid")
                             if not v or not v.Parent or not v:IsDescendantOf(workspace) or not currentHum or currentHum.Health <= 0 then
-                                RemoveESP(v)
+                                RemoveESP(targetPart)
                                 break
                             end
                             task.wait(0.5)
