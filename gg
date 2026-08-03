@@ -46,7 +46,7 @@ task.spawn(function()
                             if not frame:FindFirstChild("Amethyst_BG") then
                                 
                                 -- FIX LỖI ẢNH TỐI MỜ CHUẨN XÁC: Đánh bay lớp kính nền đen mặc định của thư viện WindUI
-                                defaultBg.ImageTransparency = 0.45 -- Ép lớp nền đen của Theme Dark mờ đi 85% để khoe trọn Waifu
+                                defaultBg.ImageTransparency = 0.45 -- ĐỘ MỜ MENU LÀ 0.45 (KHÔNG PHẢI ẢNH)
                                 
                                 -- FIX LỖI TỐI LẠI KHI MỞ MENU LẦN 2 (Chống Lag - Dùng Event):
                                 -- Bắt thóp hiệu ứng tắt/mở của WindUI, khóa vĩnh viễn không cho nó đen hơn 0.45
@@ -65,10 +65,10 @@ task.spawn(function()
                                 -- Ép load ảnh bằng định dạng siêu cấp rbxthumb để bypass lỗi Decal ID
                                 bg.Image = "rbxthumb://type=Asset&id=123903292773405&w=420&h=420"
                                 
-                                -- Độ mờ ảnh 15%, kết hợp lớp nền trong suốt phía trên sẽ làm ảnh cực kỳ rực rỡ và sắc nét
+                                -- Độ mờ ảnh giữ nguyên 15%
                                 bg.ImageTransparency = 0.15 
                                 bg.ScaleType = Enum.ScaleType.Crop
-                                bg.ZIndex = defaultBg.ZIndex + 1 -- Dán đè ngay trên lớp Background chuẩn
+                                bg.ZIndex = 0 -- Đưa ảnh xuống dưới để lớp mờ menu 0.45 phủ lên làm tối ảnh như cũ
                                 bg.Parent = frame
                                 
                                 local corner = Instance.new("UICorner")
