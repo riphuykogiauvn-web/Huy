@@ -251,7 +251,7 @@ TabStamina:Toggle({
                 while getgenv().InfStamina_Basic do
                     task.wait()
                     pcall(function()
-                        require(game.ReplicatedStorage.Systems.Character.Game.Sprinting).Stamina = 100
+                        require(game.ReplicatedStorage.Systems.Character.Game.SSprint).Stamina = 100
                     end)
                 end
             end)
@@ -441,8 +441,8 @@ TabSurvive:Toggle({
                             -- Nếu có Pizza Guy trong list và nằm trong tầm ngắm 150m
                             if targetPart then
                                 local lookPos = Vector3.new(targetPart.Position.X, hrp.Position.Y, targetPart.Position.Z)
-                                -- LERP thần thánh giúp camera lia vào NPC mượt như lụa, chống giật khựng
-                                hrp.CFrame = hrp.CFrame:Lerp(CFrame.lookAt(hrp.Position, lookPos), 0.6)
+                                -- Xóa Lerp để ngắm chuẩn 100% không lệch tâm khi vừa chạy vừa bắn
+                                hrp.CFrame = CFrame.lookAt(hrp.Position, lookPos)
                             end
                         else
                             if not getgenv().Amethyst_ShedletskyAimbot then
@@ -606,8 +606,8 @@ TabSurvive:Toggle({
                             -- Nếu có Pizza Guy trong list và nằm trong tầm ngắm 40m
                             if targetPart then
                                 local lookPos = Vector3.new(targetPart.Position.X, hrp.Position.Y, targetPart.Position.Z)
-                                -- LERP thần thánh giúp camera lia vào NPC mượt như lụa, chống giật khựng
-                                hrp.CFrame = hrp.CFrame:Lerp(CFrame.lookAt(hrp.Position, lookPos), 0.6)
+                                -- Xóa Lerp để ngắm chuẩn 100% không lệch tâm khi vừa chạy vừa chém
+                                hrp.CFrame = CFrame.lookAt(hrp.Position, lookPos)
                             end
                         else
                             -- Trả lại tự do nếu không có Aimbot nào khác đang kích hoạt
@@ -1019,7 +1019,8 @@ TabSurvive:Toggle({ Title = "Aimbot Gồng Ném Lọ (Kèm Camera VIP)", Default
 TabSurvive:Toggle({ Title = "Aimbot Chém Rìu (Hatchet)", Default = false, Callback = function(s) Config.EnableHatchetAim = s end })
 TabSurvive:Input({ Title = "Phạm Vi Kỹ Năng (Range)", Default = "150", Numeric = true, Finished = true, Callback = function(v) if tonumber(v) then Config.AimRange = tonumber(v) end end })
 
-WindUI:Notify({ Title = "JANE DOE V27", Content = "Đã tích hợp chế độ dò Thanh Tiến Độ (Charge) ngắm bắn độc lập!", Duration = 5 })
+-- Bê nguyên xi dòng báo cáo từ file gốc
+WindUI:Notify({ Title = "V27 FIX HATCHET", Content = "Chém rìu bẻ cổ trúng 100%, không lệch 1 li!", Duration = 5 })
 
 -- 4. KILLER (Icon: Đầu lâu)
 local TabKiller = Window:Tab({ Title = "Killer", Icon = "skull" })
